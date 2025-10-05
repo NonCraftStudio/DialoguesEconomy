@@ -61,13 +61,12 @@ DialoguesEconomy เป็นระบบ **Dialogue + Economy** สำหรั
 /dialogue reload
 /dialogue create Dialogue2
 
-
+```
 ---
-
 📝 Configuration / การตั้งค่า
 
 ตัวอย่าง dialogue.yml
-
+```
 sections:
   start:
     - type: text
@@ -90,12 +89,12 @@ sections:
       item: DIAMOND
       amount: 1
     - type: end
+```
 
-
----
+___
 
 📌 Notes / หมายเหตุ
-
+```
 HoverEvent ใช้ API ใหม่ของ BungeeCord
 
 รองรับข้อความหลายบรรทัดใน HoverEvent
@@ -104,12 +103,12 @@ HoverEvent ใช้ API ใหม่ของ BungeeCord
 
 รองรับ PlaceholderAPI เช่น %player_name% และ placeholders อื่น ๆ
 
+```
 
-
----
+___
 
 📞 Contact / ติดต่อ
-
+```
 Discord: NonKungCh#1234
 
 GitHub: NonCraftStudio
