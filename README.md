@@ -1,84 +1,60 @@
- DialoguesEconomy
+:
 
-Minecraft: 1.21+ (Spigot/Paper)
-Java: 21
-Dependencies: Vault 1.7.6, PlaceholderAPI 2.11.5
-Author: NonKungCh (NonCraftStudio)
+# ![DialoguesEconomy](https://img.shields.io/badge/DialoguesEconomy-v1.0.0-blue) DialoguesEconomy
 
-
----
-
-📖 คำอธิบาย / Description
-
-DialoguesEconomy เป็นระบบ Dialogue + Economy สำหรับเซิร์ฟเวอร์ Minecraft
-
-แสดงข้อความ NPC, ActionBar, Title
-
-รองรับ Choice / ตัวเลือกที่คลิกได้
-
-ตรวจสอบและจัดการเงินผู้เล่นผ่าน Vault
-
-ให้และยึดไอเทม
-
-รองรับ PlaceholderAPI
-
-
-Features / คุณสมบัติ
-
-✅ สนับสนุน HoverEvent ข้อความหลายบรรทัด
-
-✅ รองรับ Placeholder เช่น %player_name%
-
-✅ ระบบเลือกตัวเลือก (Choice) พร้อม ClickEvent
-
-✅ คำสั่งครบและสามารถใช้ alias ได้
-
-
+**Minecraft:** 1.21+ (Spigot/Paper)  
+**Java:** 21  
+**Dependencies:** Vault 1.7.6, PlaceholderAPI 2.11.5  
+**Author:** NonKungCh (NonCraftStudio)
 
 ---
 
-⚙️ การติดตั้ง / Installation
+## 📖 Description / คำอธิบาย
+DialoguesEconomy เป็นระบบ **Dialogue + Economy** สำหรับเซิร์ฟเวอร์ Minecraft  
+- แสดงข้อความ NPC, ActionBar, Title  
+- รองรับ Choice / ตัวเลือกที่คลิกได้  
+- ตรวจสอบและจัดการเงินผู้เล่นผ่าน Vault  
+- ให้และยึดไอเทม  
+- รองรับ PlaceholderAPI  
 
-1. ดาวน์โหลด .jar จาก GitHub Releases
-
-
-2. วางไฟล์ .jar ลงใน plugins ของเซิร์ฟเวอร์
-
-
-3. รีสตาร์ทเซิร์ฟเวอร์
-
-
-4. ตรวจสอบว่า Vault และ PlaceholderAPI ทำงานได้
-
-
-
+**Features / คุณสมบัติ**
+- ✅ HoverEvent ข้อความหลายบรรทัด  
+- ✅ รองรับ Placeholder เช่น `%player_name%`  
+- ✅ ระบบเลือกตัวเลือก (Choice) พร้อม ClickEvent  
+- ✅ คำสั่งครบและสามารถใช้ alias ได้  
 
 ---
 
-🛠️ คำสั่ง / Commands
+## ⚙️ Installation / การติดตั้ง
+1. ดาวน์โหลด `.jar` จาก [GitHub Releases](https://github.com/NonCraftStudio/DialoguesEconomy)  
+2. วางไฟล์ `.jar` ลงในโฟลเดอร์ `plugins` ของเซิร์ฟเวอร์  
+3. รีสตาร์ทเซิร์ฟเวอร์  
+4. ตรวจสอบว่า Vault และ PlaceholderAPI ทำงานได้  
 
-Command	ภาษาไทย / Thai	English
+---
 
-/dialogue start <player> <file>	เริ่มบทสนทนากับผู้เล่น	Start a dialogue with a player
-/dialogue click <player> <file> <section>	เลือกตัวเลือกที่ hover	Choose a hover option in dialogue
-/dialogue stop <player>	ยุติบทสนทนากับผู้เล่น	Stop dialogue with a player
-/dialogue reload	โหลด config ใหม่	Reload plugin configuration
-/dialogue create <file>	สร้างไฟล์ dialogue ใหม่	Create a new dialogue file
+## 🛠️ Commands / คำสั่งทั้งหมด
 
+| Command | Thai / ภาษาไทย | English |
+|---------|----------------|---------|
+| `/dialogue start <player> <file>` | เริ่มบทสนทนากับผู้เล่น | Start a dialogue with a player |
+| `/dialogue click <player> <file> <section>` | เลือกตัวเลือกในบทสนทนา | Choose a hover option in dialogue |
+| `/dialogue stop <player>` | ยุติบทสนทนากับผู้เล่น | Stop dialogue with a player |
+| `/dialogue reload` | โหลด config ใหม่ | Reload plugin configuration |
+| `/dialogue create <file>` | สร้างไฟล์ dialogue ใหม่ | Create a new dialogue file |
 
-Aliases / คำสั่งย่อ
+**Aliases / คำสั่งย่อ**
 
-Alias	ใช้แทน / Replace
+| Alias | แทน / Replace |
+|-------|----------------|
+| `/dia start <player> <file>` | `/dialogue start ...` |
+| `/dia click <player> <file> <section>` | `/dialogue click ...` |
+| `/dia stop <player>` | `/dialogue stop ...` |
+| `/dia reload` | `/dialogue reload` |
+| `/dia create <file>` | `/dialogue create ...` |
 
-/dia start <player> <file>	/dialogue start ...
-/dia click <player> <file> <section>	/dialogue click ...
-/dia stop <player>	/dialogue stop ...
-/dia reload	/dialogue reload
-/dia create <file>	/dialogue create ...
-
-
-ตัวอย่าง / Example
-
+**Example / ตัวอย่าง**
+```text
 /dialogue start Notn Dialogue1
 /dialogue click Notn Dialogue1 SectionA
 /dialogue stop Notn
@@ -88,7 +64,7 @@ Alias	ใช้แทน / Replace
 
 ---
 
-📝 การตั้งค่า / Configuration
+📝 Configuration / การตั้งค่า
 
 ตัวอย่าง dialogue.yml
 
@@ -124,18 +100,25 @@ HoverEvent ใช้ API ใหม่ของ BungeeCord
 
 รองรับข้อความหลายบรรทัดใน HoverEvent
 
-ตรวจสอบว่า Vault Economy พร้อมใช้งานก่อนใช้คำสั่ง take_money / check_money
+ตรวจสอบว่า Vault Economy พร้อมใช้งานก่อนใช้ take_money / check_money
 
-รองรับ PlaceholderAPI สำหรับ %player_name% และ placeholders อื่น ๆ
+รองรับ PlaceholderAPI เช่น %player_name% และ placeholders อื่น ๆ
 
 
 
 ---
 
-📞 ติดต่อ / Contact
+📞 Contact / ติดต่อ
 
 Discord: NonKungCh#1234
 
 GitHub: NonCraftStudio
 
+
+คุณสามารถ:
+1. เปิด **Notepad / VSCode / Sublime Text**  
+2. วางเนื้อหาด้านบนลงไป  
+3. บันทึกเป็น `README.md`  
+
+ถ้าต้องการ ผมสามารถทำ **เวอร์ชัน ZIP พร้อม `README.md`** ให้คุณโหลดพร้อมได้เลย คุณอยากให้ผมทำไหม?
 
