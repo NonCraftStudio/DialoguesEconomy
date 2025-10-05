@@ -28,7 +28,6 @@ public class DialoguesEconomy extends JavaPlugin {
         config = getConfig();
         if (!dialoguesFolder.exists()) dialoguesFolder.mkdirs(); 
         
-        // ตรวจสอบ PlaceholderAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             placeholderApiEnabled = true;
             getLogger().info("PlaceholderAPI found and enabled.");
@@ -84,15 +83,16 @@ public class DialoguesEconomy extends JavaPlugin {
                     return true;
                 }
                 
-                // **Player Busy Check:** if (activeDialogues.containsKey(target.getUniqueId())) {
+                // **Player Busy Check: แก้ไขวงเล็บปีกกาที่นี่**
+                if (activeDialogues.containsKey(target.getUniqueId())) {
                     String busyMessage = config.getString("messages.player-busy", "&cYou are already in a dialogue!");
                     target.sendMessage(ChatColor.translateAlternateColorCodes('&', busyMessage));
                     return true;
-                }
-                
+                } // <--- วงเล็บปีกกาปิดที่ถูกเพิ่มเข้ามา
+
                 initiateDialogue(sender, target, filename, section);
                 return true;
-            }
+            } // <--- วงเล็บปีกกาปิดของ if (args.length >= 2 && args[0].equalsIgnoreCase("run")) {
             
             // คำสั่งอื่นๆ
             if (args[0].equalsIgnoreCase("reload")) {
@@ -104,7 +104,6 @@ public class DialoguesEconomy extends JavaPlugin {
         }
 
         if (command.getName().equalsIgnoreCase("balance")) {
-            // **TODO:** เมื่อเชื่อม Vault แล้ว ให้แสดงยอดเงินจริง
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 player.sendMessage(ChatColor.GOLD + "Your balance: (Mocked) 10000 ⛃"); 
@@ -126,10 +125,8 @@ public class DialoguesEconomy extends JavaPlugin {
         DialogueState state = new DialogueState(file, dialogueConfig, section);
         activeDialogues.put(target.getUniqueId(), state);
         
-        // เริ่มรัน DialogueRunner
         new DialogueRunner(this, target, state, activeDialogues, placeholderApiEnabled).runTask(this);
         
-        // ส่งข้อความเริ่มต้น
         if (caller instanceof Player) {
             String startMsg = config.getString("messages.dialogue-started");
             if (startMsg != null) target.sendMessage(ChatColor.translateAlternateColorCodes('&', startMsg));
