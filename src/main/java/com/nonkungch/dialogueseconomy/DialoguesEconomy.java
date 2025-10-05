@@ -30,34 +30,39 @@ public class DialoguesEconomy extends JavaPlugin {
     private static Economy economy;
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
 
-@Override
-public void onEnable() {
-    // --- 1. โหลด config.yml ---
-    saveDefaultConfig(); // สร้าง config.yml ถ้ายังไม่มี
+public class DialoguesEconomy extends JavaPlugin {
 
-    // --- 2. โหลด dialogue.yml ---
-    File dialogueFile = new File(getDataFolder(), "dialogue.yml");
-    if (!dialogueFile.exists()) {
-        // ถ้าไม่มีไฟล์ ให้ก๊อปจาก resources ของ Plugin
-        saveResource("dialogue.yml", false);
-    }
+    private Economy economy;
 
-    // --- 3. ตรวจสอบ Vault และตั้งค่า economy ---
-    if (getServer().getPluginManager().getPlugin("Vault") != null) {
-        if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
-            economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
-            getLogger().info("Vault Economy hooked successfully!");
-        } else {
-            getLogger().warning("Vault Economy service not found!");
+    @Override
+    public void onEnable() {
+        // --- โหลด config.yml ---
+        saveDefaultConfig();
+
+        // --- โหลด dialogue.yml ---
+        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
+        if (!dialogueFile.exists()) {
+            saveResource("dialogue.yml", false);
         }
-    } else {
-        getLogger().warning("Vault not found! Economy features will be disabled.");
-    }
 
-    getLogger().info("DialoguesEconomy enabled!");
+        // --- ตรวจสอบ Vault และตั้งค่า economy ---
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
+                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+                getLogger().info("Vault Economy hooked successfully!");
+            } else {
+                getLogger().warning("Vault Economy service not found!");
+            }
+        } else {
+            getLogger().warning("Vault not found! Economy features will be disabled.");
+        }
+
+        getLogger().info("DialoguesEconomy enabled!");
+    }
 
     // ================= DialogueState Inner Class ==================
     public static class DialogueState {
+        // โค้ดของ DialogueState
         private final File dialogueFile;
         private int currentLine = 0;
         private String currentSection = "start";
