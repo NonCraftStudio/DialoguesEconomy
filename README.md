@@ -1,106 +1,141 @@
-# **![DialoguesEconomy](https://img.shields.io/badge/DialoguesEconomy-v1.0.0-blue) DialoguesEconomy**
+ DialoguesEconomy
 
-**Minecraft:** 1.21+ (Spigot/Paper)  
-**Java:** 21  
-**Dependencies:** Vault 1.7.6, PlaceholderAPI 2.11.5  
-**Author:** NonKungCh (NonCraftStudio)
+Minecraft: 1.21+ (Spigot/Paper)
+Java: 21
+Dependencies: Vault 1.7.6, PlaceholderAPI 2.11.5
+Author: NonKungCh (NonCraftStudio)
 
----
-
-## **üìñ ‡∏Ñ‡∏≥‡∏≠‡∏ò‡∏¥‡∏ö‡∏≤‡∏¢ / Description**
-**DialoguesEconomy** ‡πÄ‡∏õ‡πá‡∏ô‡∏£‡∏∞‡∏ö‡∏ö **Dialogue + Economy** ‡∏™‡∏≥‡∏´‡∏£‡∏±‡∏ö‡πÄ‡∏ã‡∏¥‡∏£‡πå‡∏ü‡πÄ‡∏ß‡∏≠‡∏£‡πå Minecraft  
-- **‡πÅ‡∏™‡∏î‡∏á‡∏Ç‡πâ‡∏≠‡∏Ñ‡∏ß‡∏≤‡∏° NPC, ActionBar, Title**  
-- **‡∏£‡∏≠‡∏á‡∏£‡∏±‡∏ö Choice / ‡∏ï‡∏±‡∏ß‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ó‡∏µ‡πà‡∏Ñ‡∏•‡∏¥‡∏Å‡πÑ‡∏î‡πâ**  
-- **‡∏ï‡∏£‡∏ß‡∏à‡∏™‡∏≠‡∏ö‡πÅ‡∏•‡∏∞‡∏à‡∏±‡∏î‡∏Å‡∏≤‡∏£‡πÄ‡∏á‡∏¥‡∏ô‡∏ú‡∏π‡πâ‡πÄ‡∏•‡πà‡∏ô‡∏ú‡πà‡∏≤‡∏ô Vault**  
-- **‡πÉ‡∏´‡πâ‡πÅ‡∏•‡∏∞‡∏¢‡∏∂‡∏î‡πÑ‡∏≠‡πÄ‡∏ó‡∏°**  
-- **‡∏£‡∏≠‡∏á‡∏£‡∏±‡∏ö PlaceholderAPI**
-
-**Features / ‡∏Ñ‡∏∏‡∏ì‡∏™‡∏°‡∏ö‡∏±‡∏ï‡∏¥**
-- ‚úÖ **‡∏™‡∏ô‡∏±‡∏ö‡∏™‡∏ô‡∏∏‡∏ô HoverEvent ‡∏Ç‡πâ‡∏≠‡∏Ñ‡∏ß‡∏≤‡∏°‡∏´‡∏•‡∏≤‡∏¢‡∏ö‡∏£‡∏£‡∏ó‡∏±‡∏î**  
-- ‚úÖ **‡∏£‡∏≠‡∏á‡∏£‡∏±‡∏ö Placeholder ‡πÄ‡∏ä‡πà‡∏ô `%player_name%`**  
-- ‚úÖ **‡∏£‡∏∞‡∏ö‡∏ö‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ï‡∏±‡∏ß‡πÄ‡∏•‡∏∑‡∏≠‡∏Å (Choice) ‡∏û‡∏£‡πâ‡∏≠‡∏° ClickEvent**
 
 ---
 
-## **‚öôÔ∏è ‡∏Å‡∏≤‡∏£‡∏ï‡∏¥‡∏î‡∏ï‡∏±‡πâ‡∏á / Installation**
-1. **‡∏î‡∏≤‡∏ß‡∏ô‡πå‡πÇ‡∏´‡∏•‡∏î `.jar` ‡∏à‡∏≤‡∏Å [GitHub Releases](https://github.com/NonCraftStudio/DialoguesEconomy)`**  
-2. **‡∏ß‡∏≤‡∏á‡πÑ‡∏ü‡∏•‡πå `.jar` ‡∏•‡∏á‡πÉ‡∏ô `plugins` ‡∏Ç‡∏≠‡∏á‡πÄ‡∏ã‡∏¥‡∏£‡πå‡∏ü‡πÄ‡∏ß‡∏≠‡∏£‡πå**  
-3. **‡∏£‡∏µ‡∏™‡∏ï‡∏≤‡∏£‡πå‡∏ó‡πÄ‡∏ã‡∏¥‡∏£‡πå‡∏ü‡πÄ‡∏ß‡∏≠‡∏£‡πå**  
-4. **‡∏ï‡∏£‡∏ß‡∏à‡∏™‡∏≠‡∏ö‡∏ß‡πà‡∏≤ Vault ‡πÅ‡∏•‡∏∞ PlaceholderAPI ‡∏ó‡∏≥‡∏á‡∏≤‡∏ô‡πÑ‡∏î‡πâ**
+î9ﬁ8 Å2œ2Å2”9Å2”3Å2—2Å2‘0Å2—4Å2”8Å2“2 / Description
+
+DialoguesEconomy Å2’2Å2—5Å2’9Å2—3Å2“3Å2”6Å2—4Å2—4 Dialogue + Economy Å2”0Å2”9Å2”1Å2“3Å2”7Å2—4Å2’2Å2œ9Å2‘0Å2“3Å2÷4Å2—9Å2’2Å2“7Å2”3Å2“3Å2÷4 Minecraft
+
+Å2’3Å2”0Å2–8Å2œ5Å2œ0Å2÷1Å2”3Å2œ2Å2“7Å2”8Å2“1 NPC, ActionBar, Title
+
+Å2“3Å2”3Å2œ5Å2“3Å2”7Å2—4 Choice / Å2–9Å2”7Å2“7Å2’2Å2“5Å2‘3Å2”3Å2Œ9Å2—1Å2‘1Å2÷0Å2œ2Å2“5Å2‘0Å2Œ9Å2’6Å2–8Å2÷1
+
+Å2–9Å2“3Å2“7Å2œ6Å2”0Å2”3Å2—4Å2’3Å2“5Å2”6Å2œ6Å2”7Å2–8Å2Œ9Å2”8Å2“3Å2’2Å2œ5Å2‘0Å2—3Å2—6Å2‘5Å2÷1Å2’2Å2“5Å2÷0Å2—3Å2—6Å2÷0Å2”8Å2—3 Vault
+
+Å2’5Å2”1Å2÷1Å2’3Å2“5Å2”6Å2“2Å2‘2Å2–8Å2’6Å2”3Å2’2Å2—1Å2“1
+
+Å2“3Å2”3Å2œ5Å2“3Å2”7Å2—4 PlaceholderAPI
+
+
+Features / Å2œ2Å2‘4Å2–7Å2”0Å2“1Å2—4Å2”7Å2–9Å2‘0
+
+Å7º3 Å2”0Å2—3Å2”7Å2—4Å2”0Å2—3Å2‘4Å2—3 HoverEvent Å2œ0Å2÷1Å2”3Å2œ2Å2“7Å2”8Å2“1Å2”1Å2“5Å2”8Å2“2Å2—4Å2“3Å2“3Å2—1Å2”7Å2–8
+
+Å7º3 Å2“3Å2”3Å2œ5Å2“3Å2”7Å2—4 Placeholder Å2’2Å2œ8Å2÷0Å2—3 %player_name%
+
+Å7º3 Å2“3Å2”6Å2—4Å2—4Å2’2Å2“5Å2‘3Å2”3Å2Œ9Å2–9Å2”7Å2“7Å2’2Å2“5Å2‘3Å2”3Å2Œ9 (Choice) Å2—8Å2“3Å2÷1Å2”3Å2“1 ClickEvent
+
+Å7º3 Å2œ2Å2”9Å2”0Å2”7Å2÷0Å2œ5Å2œ2Å2“3Å2—4Å2’3Å2“5Å2”6Å2”0Å2”8Å2“1Å2”8Å2“3Å2—0Å2’5Å2œ8Å2÷1 alias Å2’6Å2–8Å2÷1
+
+
 
 ---
 
-## **üõ†Ô∏è ‡∏Ñ‡∏≥‡∏™‡∏±‡πà‡∏á / Commands**
+Å7±5Ñ1Ç5 Å2Œ9Å2”8Å2“3Å2–9Å2‘0Å2–8Å2–9Å2”7Å2÷1Å2œ5 / Installation
 
-| **Command** | **‡∏†‡∏≤‡∏©‡∏≤‡πÑ‡∏ó‡∏¢ / Thai** | **English** |
-|-------------|------------------|-------------|
-| `/dialogue start <player> <file>` | **‡πÄ‡∏£‡∏¥‡πà‡∏°‡∏ö‡∏ó‡∏™‡∏ô‡∏ó‡∏ô‡∏≤‡∏Å‡∏±‡∏ö‡∏ú‡∏π‡πâ‡πÄ‡∏•‡πà‡∏ô** | **Start a dialogue with a player** |
-| `/dialogue click <player> <file> <section>` | **‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ï‡∏±‡∏ß‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ó‡∏µ‡πà hover** | **Choose a hover option in dialogue** |
-| `/dialogue stop <player>` | **‡∏¢‡∏∏‡∏ï‡∏¥‡∏ö‡∏ó‡∏™‡∏ô‡∏ó‡∏ô‡∏≤‡∏Å‡∏±‡∏ö‡∏ú‡∏π‡πâ‡πÄ‡∏•‡πà‡∏ô** | **Stop dialogue with a player** |
-| `/dialogue reload` | **‡πÇ‡∏´‡∏•‡∏î config ‡πÉ‡∏´‡∏°‡πà** | **Reload plugin configuration** |
+1. Å2–8Å2”8Å2“7Å2—3Å2÷4Å2’4Å2”1Å2“5Å2–8 .jar Å2œ6Å2”8Å2Œ9 GitHub Releases
 
-**‡∏ï‡∏±‡∏ß‡∏≠‡∏¢‡πà‡∏≤‡∏á / Example**
-```text
+
+2. Å2“7Å2”8Å2œ5Å2’6Å2—9Å2“5Å2÷4 .jar Å2“5Å2œ5Å2’5Å2—3 plugins Å2œ0Å2”3Å2œ5Å2’2Å2œ9Å2‘0Å2“3Å2÷4Å2—9Å2’2Å2“7Å2”3Å2“3Å2÷4
+
+
+3. Å2“3Å2‘1Å2”0Å2–9Å2”8Å2“3Å2÷4Å2—1Å2’2Å2œ9Å2‘0Å2“3Å2÷4Å2—9Å2’2Å2“7Å2”3Å2“3Å2÷4
+
+
+4. Å2–9Å2“3Å2“7Å2œ6Å2”0Å2”3Å2—4Å2“7Å2÷0Å2”8 Vault Å2’3Å2“5Å2”6 PlaceholderAPI Å2—1Å2”9Å2œ5Å2”8Å2—3Å2’6Å2–8Å2÷1
+
+
+
+
+---
+
+ï0ï0Ñ1Ç5 Å2œ2Å2”9Å2”0Å2”7Å2÷0Å2œ5 / Commands
+
+Command	Å2“0Å2”8Å2“9Å2”8Å2’6Å2—1Å2“2 / Thai	English
+
+/dialogue start <player> <file>	Å2’2Å2“3Å2‘0Å2÷0Å2“1Å2—4Å2—1Å2”0Å2—3Å2—1Å2—3Å2”8Å2Œ9Å2”7Å2—4Å2—6Å2‘5Å2÷1Å2’2Å2“5Å2÷0Å2—3	Start a dialogue with a player
+/dialogue click <player> <file> <section>	Å2’2Å2“5Å2‘3Å2”3Å2Œ9Å2–9Å2”7Å2“7Å2’2Å2“5Å2‘3Å2”3Å2Œ9Å2—1Å2‘1Å2÷0 hover	Choose a hover option in dialogue
+/dialogue stop <player>	Å2“2Å2‘4Å2–9Å2‘0Å2—4Å2—1Å2”0Å2—3Å2—1Å2—3Å2”8Å2Œ9Å2”7Å2—4Å2—6Å2‘5Å2÷1Å2’2Å2“5Å2÷0Å2—3	Stop dialogue with a player
+/dialogue reload	Å2’4Å2”1Å2“5Å2–8 config Å2’5Å2”1Å2“1Å2÷0	Reload plugin configuration
+/dialogue create <file>	Å2”0Å2“3Å2÷1Å2”8Å2œ5Å2’6Å2—9Å2“5Å2÷4 dialogue Å2’5Å2”1Å2“1Å2÷0	Create a new dialogue file
+
+
+Aliases / Å2œ2Å2”9Å2”0Å2”7Å2÷0Å2œ5Å2“2Å2÷0Å2”3
+
+Alias	Å2’5Å2œ8Å2÷1Å2’3Å2—1Å2—3 / Replace
+
+/dia start <player> <file>	/dialogue start ...
+/dia click <player> <file> <section>	/dialogue click ...
+/dia stop <player>	/dialogue stop ...
+/dia reload	/dialogue reload
+/dia create <file>	/dialogue create ...
+
+
+Å2–9Å2”7Å2“7Å2”3Å2“2Å2÷0Å2”8Å2œ5 / Example
+
 /dialogue start Notn Dialogue1
 /dialogue click Notn Dialogue1 SectionA
 /dialogue stop Notn
 /dialogue reload
-```
+/dialogue create Dialogue2
+
 
 ---
 
-## **üìù ‡∏Å‡∏≤‡∏£‡∏ï‡∏±‡πâ‡∏á‡∏Ñ‡πà‡∏≤ / Configuration**
+î9ﬂ5 Å2Œ9Å2”8Å2“3Å2–9Å2”7Å2÷1Å2œ5Å2œ2Å2÷0Å2”8 / Configuration
 
-**‡∏ï‡∏±‡∏ß‡∏≠‡∏¢‡πà‡∏≤‡∏á `dialogue.yml`**
-```yaml
+Å2–9Å2”7Å2“7Å2”3Å2“2Å2÷0Å2”8Å2œ5 dialogue.yml
+
 sections:
   start:
     - type: text
-      line:
-        - "say: [Jame] : ‡∏™‡∏ß‡∏±‡∏™‡∏î‡∏µ!"
-        - "say: [%player_name%] : ‡∏™‡∏ß‡∏±‡∏™‡∏î‡∏µ Jame!"
-        - "cmd: /give %player_name% diamond 1"
-      display: chat
-
+      line: "say: [Jame] : hi"
+    - type: text
+      line: "say: [%player_name%] : hi Jame"
+    - type: command
+      line: "cmd: /give %player_name% diamond 1"
     - type: choice
-      line:
-        - "say: ‡∏Ñ‡∏∏‡∏ì‡∏≠‡∏¢‡∏≤‡∏Å‡∏£‡∏±‡∏ö‡πÄ‡∏û‡∏ä‡∏£‡∏´‡∏£‡∏∑‡∏≠‡πÑ‡∏°‡πà?"
-      action: "goto:giveDiamond"
+      line: "Å2’2Å2“5Å2‘3Å2”3Å2Œ9Å2–9Å2”7Å2“7Å2’2Å2“5Å2‘3Å2”3Å2Œ9:"
+      action: "goto:nextSection"
 
-  giveDiamond:
+  nextSection:
     - type: check_money
       amount: 100
-      fail_goto: notEnoughMoney
+      fail_goto: start
     - type: take_money
       amount: 100
     - type: give_item
       item: DIAMOND
       amount: 1
-    - type: text
-      line:
-        - "say: ‡∏Ñ‡∏∏‡∏ì‡πÑ‡∏î‡πâ‡∏£‡∏±‡∏ö‡πÄ‡∏û‡∏ä‡∏£‡πÅ‡∏•‡πâ‡∏ß! üíé"
-        - "say: ‡∏™‡∏ô‡∏∏‡∏Å‡∏Å‡∏±‡∏ö‡∏Å‡∏≤‡∏£‡πÄ‡∏•‡πà‡∏ô‡∏ô‡∏∞!"
-      display: chat
     - type: end
 
-  notEnoughMoney:
-    - type: text
-      line:
-        - "say: ‡∏Ñ‡∏∏‡∏ì‡∏°‡∏µ‡πÄ‡∏á‡∏¥‡∏ô‡πÑ‡∏°‡πà‡∏û‡∏≠!"
-      display: chat
-    - type: end
-```
 
 ---
 
-## **üìå Notes / ‡∏´‡∏°‡∏≤‡∏¢‡πÄ‡∏´‡∏ï‡∏∏**
-- **HoverEvent ‡πÉ‡∏ä‡πâ API ‡πÉ‡∏´‡∏°‡πà‡∏Ç‡∏≠‡∏á BungeeCord**  
-- **‡∏£‡∏≠‡∏á‡∏£‡∏±‡∏ö‡∏Ç‡πâ‡∏≠‡∏Ñ‡∏ß‡∏≤‡∏°‡∏´‡∏•‡∏≤‡∏¢‡∏ö‡∏£‡∏£‡∏ó‡∏±‡∏î‡πÉ‡∏ô HoverEvent**  
-- **‡∏ï‡∏£‡∏ß‡∏à‡∏™‡∏≠‡∏ö‡∏ß‡πà‡∏≤ Vault Economy ‡∏û‡∏£‡πâ‡∏≠‡∏°‡πÉ‡∏ä‡πâ‡∏á‡∏≤‡∏ô‡∏Å‡πà‡∏≠‡∏ô‡πÉ‡∏ä‡πâ‡∏Ñ‡∏≥‡∏™‡∏±‡πà‡∏á take_money / check_money**  
-- **‡∏£‡∏≠‡∏á‡∏£‡∏±‡∏ö PlaceholderAPI ‡∏™‡∏≥‡∏´‡∏£‡∏±‡∏ö %player_name% ‡πÅ‡∏•‡∏∞ placeholders ‡∏≠‡∏∑‡πà‡∏ô ‡πÜ**
+î9›8 Notes / Å2”1Å2“1Å2”8Å2“2Å2’2Å2”1Å2–9Å2‘4
+
+HoverEvent Å2’5Å2œ8Å2÷1 API Å2’5Å2”1Å2“1Å2÷0Å2œ0Å2”3Å2œ5 BungeeCord
+
+Å2“3Å2”3Å2œ5Å2“3Å2”7Å2—4Å2œ0Å2÷1Å2”3Å2œ2Å2“7Å2”8Å2“1Å2”1Å2“5Å2”8Å2“2Å2—4Å2“3Å2“3Å2—1Å2”7Å2–8Å2’5Å2—3 HoverEvent
+
+Å2–9Å2“3Å2“7Å2œ6Å2”0Å2”3Å2—4Å2“7Å2÷0Å2”8 Vault Economy Å2—8Å2“3Å2÷1Å2”3Å2“1Å2’5Å2œ8Å2÷1Å2œ5Å2”8Å2—3Å2Œ9Å2÷0Å2”3Å2—3Å2’5Å2œ8Å2÷1Å2œ2Å2”9Å2”0Å2”7Å2÷0Å2œ5 take_money / check_money
+
+Å2“3Å2”3Å2œ5Å2“3Å2”7Å2—4 PlaceholderAPI Å2”0Å2”9Å2”1Å2“3Å2”7Å2—4 %player_name% Å2’3Å2“5Å2”6 placeholders Å2”3Å2‘3Å2÷0Å2—3 Å2’8
+
+
 
 ---
 
-## **üìû ‡∏ï‡∏¥‡∏î‡∏ï‡πà‡∏≠ / Contact**
-- **Discord:** NonKungCh#1234  
-- **GitHub:** [NonCraftStudio](https://github.com/NonCraftStudio)
+î9ﬂ6 Å2–9Å2‘0Å2–8Å2–9Å2÷0Å2”3 / Contact
+
+Discord: NonKungCh#1234
+
+GitHub: NonCraftStudio
+
+
