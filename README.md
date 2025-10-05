@@ -56,20 +56,38 @@
 sections:
   start:
     - type: text
-      line: "สวัสดี %player_name%! Welcome to our server!"
+      line:
+        - "say: [Jame] : สวัสดี!"
+        - "say: [%player_name%] : สวัสดี Jame!"
+        - "cmd: /give %player_name% diamond 1"
       display: chat
+
     - type: choice
-      line: "เลือกตัวเลือก:"
-      action: "goto:nextSection"
-  nextSection:
+      line:
+        - "say: คุณอยากรับเพชรหรือไม่?"
+      action: "goto:giveDiamond"
+
+  giveDiamond:
     - type: check_money
       amount: 100
-      fail_goto: start
+      fail_goto: notEnoughMoney
     - type: take_money
       amount: 100
     - type: give_item
       item: DIAMOND
       amount: 1
+    - type: text
+      line:
+        - "say: คุณได้รับเพชรแล้ว! 💎"
+        - "say: สนุกกับการเล่นนะ!"
+      display: chat
+    - type: end
+
+  notEnoughMoney:
+    - type: text
+      line:
+        - "say: คุณมีเงินไม่พอ!"
+      display: chat
     - type: end
 ```
 
