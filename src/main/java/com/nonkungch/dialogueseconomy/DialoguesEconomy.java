@@ -1,4 +1,4 @@
-package com.yourname.dialogueplugin;
+package com.nonkungch.dialogueseconomy; // <<< แก้ไขชื่อแพ็คเกจแล้ว
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.Command;
@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.List;
-import java.util.Collections; // สำหรับ DialogueFileManager จำลอง
 
 // Dependencies
 import net.milkbowl.vault.economy.Economy;
@@ -25,11 +24,11 @@ import net.md_5.bungee.api.chat.ClickEvent;
 // PlaceholderAPI (ต้องมี Library ใน Build Path)
 import me.clip.placeholderapi.PlaceholderAPI;
 
-// Floodgate API for Bedrock Edition's Forms (ต้องมี Library ใน Build Path)
-// **NOTE: ต้องมี Floodgate JAR ใน Build Path เพื่อให้โค้ดส่วนนี้ Compile ได้**
+// Floodgate API Imports (ต้องมี Library ใน Build Path เพื่อให้ใช้งานได้จริง)
+// NOTE: ผมจะใช้ // เพื่อจำลองการ Import API ภายนอกที่ไม่ใช่มาตรฐาน Bukkit
 // import org.geysermc.floodgate.api.FloodgateApi;
 // import org.geysermc.floodgate.api.player.PublicPlayer;
-// import org.geysermc.floodgate.api.SimpleForm; 
+
 
 public class DialoguesEconomy extends JavaPlugin {
 
@@ -39,18 +38,16 @@ public class DialoguesEconomy extends JavaPlugin {
     // 1. เก็บ Map ของผู้เล่นที่กำลังคุย
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
 
-    // Map จำลองสำหรับเก็บข้อมูลบทสนทนา (DialogueFileManager)
+    // Map จำลองสำหรับเก็บข้อมูลบทสนทนา
     private final Map<String, Dialogue> loadedDialogues = new HashMap<>();
 
     @Override
     public void onEnable() {
         instance = this;
         
-        // 1. โหลดไฟล์
         this.saveDefaultConfig();
-        loadAllDialogues(); // โหลดบทสนทนาจำลอง
+        loadAllDialogues();
         
-        // 2. ตรวจสอบ Vault
         if (!setupEconomy()) {
             getLogger().warning("Vault dependency not found. Economy features disabled.");
         }
@@ -61,17 +58,19 @@ public class DialoguesEconomy extends JavaPlugin {
         
         getLogger().info("DialoguesEconomy is enabled.");
     }
-
-    // Vault Setup (ย่อ)
+    
+    // Vault Setup (จำลอง)
     private boolean setupEconomy() {
-        // ... Logic การเชื่อมต่อ Vault ...
-        return true; // สมมติว่าสำเร็จ
+        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) return false;
+        economy = rsp.getProvider();
+        return economy != null;
     }
 
     // DialogueFileManager จำลอง (ในโค้ดจริงต้องอ่านจาก dialogue.yml)
     private void loadAllDialogues() {
-        // ... โค้ดจริงจะอ่านจากไฟล์ ...
-        // ตัวอย่างการโหลด
+        // ... (โค้ดจริงจะอ่านจากไฟล์ YAML)
         List<Map<String, Object>> lines = List.of(
             Map.of("type", "text", "line", "สวัสดี %player_name%! คุณจะรับเควสนี้ไหม?", "delay", 40),
             Map.of("type", "check_money", "amount", 100.0, "success_id", "quest_accept", "fail_id", "quest_deny"),
@@ -109,7 +108,7 @@ public class DialoguesEconomy extends JavaPlugin {
     public Dialogue getDialogue(String id) { return loadedDialogues.get(id); }
 
     // =========================================================================
-    // 1. Dialogue State Class
+    // 1. Dialogue State Class (Nested)
     // =========================================================================
     public static class DialogueState {
         private final String dialogueId;
@@ -133,9 +132,11 @@ public class DialoguesEconomy extends JavaPlugin {
     }
 
     // =========================================================================
-    // 2. Dialogue Runner Class
+    // 2. Dialogue Runner Class (Nested)
     // =========================================================================
     public static class DialogueRunner {
+        
+        private static final DialoguesEconomy instance = DialoguesEconomy.getInstance();
 
         public static void startDialogue(Player player, DialogueState state) {
             instance.getActiveDialogues().put(player.getUniqueId(), state);
@@ -157,7 +158,7 @@ public class DialoguesEconomy extends JavaPlugin {
 
             Map<String, Object> lineData = state.getCurrentLine();
             String type = (String) lineData.getOrDefault("type", "text");
-            int delay = instance.getConfig().getInt("default-delay", 20); // 20 ticks = 1 second
+            int delay = instance.getConfig().getInt("default-delay", 20);
 
             switch (type) {
                 case "text":
@@ -167,23 +168,21 @@ public class DialoguesEconomy extends JavaPlugin {
                     break;
                 case "check_money":
                     handleCheckMoney(player, state, lineData);
-                    return; // check_money/take_money จัดการ runNextLine เอง
+                    return;
                 case "take_money":
                     handleTakeMoney(player, state, lineData);
                     return;
                 case "choice":
                     handleChoice(player, lineData);
-                    return; // choice รอผู้เล่นคลิก
+                    return; 
                 case "end":
                     endDialogue(player);
                     return;
             }
 
-            // รันบรรทัดถัดไปตาม delay
             Bukkit.getScheduler().runTaskLater(instance, () -> runNextLine(player, state), delay);
         }
         
-        // Handlers:
         private static void handleTextLine(Player player, Map<String, Object> lineData) {
             String rawText = (String) lineData.get("line");
             String processedText = PlaceholderAPI.setPlaceholders(player, rawText);
@@ -222,7 +221,7 @@ public class DialoguesEconomy extends JavaPlugin {
 
         private static void handleChoice(Player player, Map<String, Object> lineData) {
             boolean isBedrock = false;
-            // ตรวจสอบ Floodgate (จำลอง)
+            // โค้ดนี้จะทำงานเมื่อ Floodgate อยู่ใน Build Path และเปิดใช้งาน:
             // if (instance.getServer().getPluginManager().isPluginEnabled("Floodgate")) {
             //     try { isBedrock = FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()); } 
             //     catch (Exception ignored) {}
@@ -232,19 +231,18 @@ public class DialoguesEconomy extends JavaPlugin {
             List<Map<String, Object>> options = (List<Map<String, Object>>) lineData.get("options");
 
             if (isBedrock) {
-                // ** BEDROCK: ใช้ Form UI **
+                // *** BEDROCK: ใช้ Form UI (ต้องใช้ Floodgate Form API) ***
                 // PublicPlayer publicPlayer = FloodgateApi.getInstance().getPlayer(player.getUniqueId());
                 // ... สร้าง SimpleForm และส่งให้ publicPlayer.sendForm() ...
-                player.sendMessage("Bedrock UI: Showing Form with choices..."); // ข้อความจำลอง
+                player.sendMessage(ChatColor.AQUA + "Bedrock UI: Showing Form with choices..."); 
             } else {
-                // ** JAVA: ใช้ Clickable Chat **
-                handleTextLine(player, lineData); // แสดงข้อความก่อนเลือก
+                // *** JAVA: ใช้ Clickable Chat ***
+                handleTextLine(player, lineData);
                 for (int i = 0; i < options.size(); i++) {
                     Map<String, Object> option = options.get(i);
                     String text = (String) option.get("text");
                     TextComponent component = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
                     
-                    // คำสั่งที่จะรันเมื่อคลิก: /dialogue_choice <id> <index>
                     component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, 
                             "/dialogue_choice " + dialogueId + " " + i));
                     player.spigot().sendMessage(component);
@@ -254,7 +252,7 @@ public class DialoguesEconomy extends JavaPlugin {
     }
 
     // =========================================================================
-    // 3. Command Handlers
+    // 3. Command Handlers (Nested)
     // =========================================================================
     public class DialogueCommand implements CommandExecutor {
         @Override
@@ -328,9 +326,8 @@ public class DialoguesEconomy extends JavaPlugin {
     }
 
     // =========================================================================
-    // 4. Supporting Data Classes
+    // 4. Supporting Data Class (Nested)
     // =========================================================================
-    // คลาสสำหรับเก็บโครงสร้าง Dialogue (ใช้แทนการอ่านจากไฟล์โดยตรง)
     public static class Dialogue {
         private final String id;
         private final List<Map<String, Object>> lines;
