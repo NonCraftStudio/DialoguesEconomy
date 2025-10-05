@@ -13,11 +13,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 
+// Imports สำหรับ BungeeChat API
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.TextComponent; 
 import net.md_5.bungee.api.ChatMessageType;
+
 
 public class DialogueRunner extends BukkitRunnable {
 
@@ -52,7 +53,6 @@ public class DialogueRunner extends BukkitRunnable {
         // --- 1. ประมวลผล Placeholder และ Color Codes ---
         String finalLine = lineText.replace("%player_name%", target.getName());
         if (placeholderApiEnabled) {
-             // NOTE: ต้องแน่ใจว่าได้เพิ่ม Dependency ของ PlaceholderAPI ใน pom.xml แล้ว
              finalLine = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(target, finalLine);
         }
         
@@ -73,7 +73,7 @@ public class DialogueRunner extends BukkitRunnable {
             case "choice":
                 sendChoice(target, finalLine, lineConfig.getString("action", ""));
                 this.cancel(); 
-                return; // หยุด Runner เพื่อรอผู้เล่นคลิก
+                return; 
                 
             case "end":
                 endDialogue(lineConfig.getString("message", "messages.dialogue-ended"));
@@ -82,8 +82,15 @@ public class DialogueRunner extends BukkitRunnable {
             case "check_money":
                 double requiredMoney = lineConfig.getDouble("amount", 0.0);
                 
-                // **TODO: เชื่อมต่อ Vault API จริงๆ ที่นี่**
-                double playerBalance = 10000.0; // Mock Value
+                // **ใช้ Vault API จริง**
+                double playerBalance = 0.0;
+                if (DialoguesEconomy.getEconomy() != null) {
+                    playerBalance = DialoguesEconomy.getEconomy().getBalance(target);
+                } else {
+                     plugin.getLogger().warning("Vault Economy is not setup. Skipping money check.");
+                     state.incrementLine();
+                     break;
+                }
                 
                 if (playerBalance < requiredMoney) {
                     String failSection = lineConfig.getString("fail_goto");
@@ -100,8 +107,15 @@ public class DialogueRunner extends BukkitRunnable {
                 
             case "take_money":
                  double takeAmount = lineConfig.getDouble("amount", 0.0);
-                 // **TODO: เชื่อมต่อ Vault API เพื่อหักเงินจริง**
-                 target.sendMessage(ChatColor.YELLOW + plugin.getConfig().getString("messages.chat-prefix") + " &cหักเงิน " + takeAmount + " (Mocked)");
+                 
+                 // **ใช้ Vault API จริง**
+                 if (DialoguesEconomy.getEconomy() != null) {
+                    DialoguesEconomy.getEconomy().withdrawPlayer(target, takeAmount);
+                    String currency = DialoguesEconomy.getEconomy().currencyNamePlural();
+                    target.sendMessage(ChatColor.YELLOW + plugin.getConfig().getString("messages.chat-prefix") + " &cหักเงิน " + takeAmount + " " + currency);
+                 } else {
+                     target.sendMessage(ChatColor.RED + plugin.getConfig().getString("messages.chat-prefix") + " &cไม่สามารถหักเงินได้: Vault Economy ไม่พร้อมใช้งาน");
+                 }
                  state.incrementLine();
                  break;
                  
@@ -146,14 +160,12 @@ public class DialogueRunner extends BukkitRunnable {
                 break;
         }
 
-        // รันงานถัดไปตาม delay ที่กำหนด
         new DialogueRunner(plugin, target, state, activeDialogues, placeholderApiEnabled).runTaskLater(plugin, delay);
     }
     
     // --- HELPER METHODS ---
 
     private int removeItemFromInventory(Player player, Material material, int amount) {
-        // ... (โค้ด removeItemFromInventory ยังคงเหมือนเดิม)
         int removedCount = 0;
         ItemStack[] contents = player.getInventory().getContents();
         
@@ -194,7 +206,6 @@ public class DialogueRunner extends BukkitRunnable {
         String translatedLine = ChatColor.translateAlternateColorCodes('&', line);
         
         if (npcName != null) {
-            // เพิ่ม NPC name เป็น prefix ใน chat/action bar
             translatedLine = ChatColor.translateAlternateColorCodes('&', npcName + ": &r" + line);
         }
         
@@ -235,8 +246,9 @@ public class DialogueRunner extends BukkitRunnable {
             );
 
             choiceComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, secretCommand)); 
-            choiceComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, 
-                new ComponentBuilder(ChatColor.GREEN + "Click to choose: " + targetSection).create()));
+            
+            TextComponent hoverText = new TextComponent(ChatColor.GREEN + "Click to choose: " + targetSection);
+            choiceComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
             
             player.spigot().sendMessage(choiceComponent);
         } else {
