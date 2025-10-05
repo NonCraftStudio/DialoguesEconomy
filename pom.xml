@@ -47,8 +47,8 @@
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>vault-repo</id>
+            <url>https://repo.essentialsx.net/content/groups/public/</url>
         </repository>
     </repositories>
 
@@ -75,9 +75,9 @@
         </dependency>
         
         <dependency>
-            <groupId>com.github.MilkBowl</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version> 
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>Vault</artifactId>
+            <version>1.7.6</version> 
             <scope>provided</scope>
         </dependency>
     </dependencies>
