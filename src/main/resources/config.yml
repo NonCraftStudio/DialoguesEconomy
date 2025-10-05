@@ -4,11 +4,10 @@ settings:
   # เวลาหน่วงเริ่มต้นระหว่างข้อความแต่ละบรรทัด (เป็น Ticks: 20 Ticks = 1 วินาที)
   default-delay: 20
   
-  # โหมดการแสดงผลเริ่มต้น: 'chat' หรือ 'actionbar'
+  # โหมดการแสดงผลเริ่มต้น: 'chat', 'actionbar', หรือ 'title'
   display-mode: 'chat'
 
-  # ชื่อเสียงที่จะเล่นเมื่อมีข้อความใหม่
-  # สามารถหาชื่อ Sound ได้จาก Bukkit Sound API
+  # ชื่อเสียงที่จะเล่นเมื่อมีข้อความใหม่ (ใช้ชื่อ Sound ของ Bukkit)
   default-sound: 'ENTITY_EXPERIENCE_ORB_PICKUP'
 
 # การตั้งค่าข้อความต่างๆ ของระบบ
@@ -19,18 +18,11 @@ messages:
   # ข้อความที่แจ้งผู้เล่นเมื่อบทสนทนาเริ่มต้น
   dialogue-started: '%chat-prefix% &aDialogue started.'
   
-  # ข้อความที่แจ้งผู้เล่นเมื่อบทสนทนาจบลงโดยไม่มีการระบุ message ในไฟล์ Dialogue
+  # ข้อความเมื่อบทสนทนาจบลงโดยไม่มีการระบุ message
   dialogue-ended: '%chat-prefix% &2Dialogue ended successfully.'
   
   # ข้อความที่แสดงเมื่อผู้เล่นกำลังสนทนาอยู่แล้ว
   player-busy: '%chat-prefix% &cYou are already in a dialogue!'
 
-  # คำนำหน้าสำหรับข้อความผิดพลาดที่ถูกส่งไปยัง Console หรือผู้เรียกใช้คำสั่ง
+  # คำนำหน้าสำหรับข้อความผิดพลาด
   error-prefix: '&4[DE-ERROR]'
-
-# ตั้งค่าสำหรับระบบ Economy Integration (ถ้ามีปลั๊กอิน Vault)
-# economy:
-#   # ควรใช้ชื่อของ Economy Provider ที่ลงทะเบียนไว้กับ Vault
-#   provider: 'Vault'
-#   # สัญลักษณ์สกุลเงิน
-#   currency-symbol: '⛃'
