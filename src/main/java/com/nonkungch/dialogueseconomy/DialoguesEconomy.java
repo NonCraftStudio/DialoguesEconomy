@@ -30,9 +30,74 @@ public class DialoguesEconomy extends JavaPlugin {
     private static Economy economy;
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
 
-public class DialoguesEconomy extends JavaPlugin {
+    @Override
+    public void onEnable() {
+        saveDefaultConfig();
 
+        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
+        if (!dialogueFile.exists()) {
+            saveResource("dialogue.yml", false);
+        }
 
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
+                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+                getLogger().info("Vault Economy hooked successfully!");
+            } else {
+                getLogger().warning("Vault Economy service not found!");
+            }
+        } else {
+            getLogger().warning("Vault not found! Economy features will be disabled.");
+        }
+
+        getLogger().info("DialoguesEconomy enabled!");
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("DialoguesEconomy disabled!");
+    }
+
+    public static Economy getEconomy() {
+        return economy;
+    }
+
+    // ================= DialogueState Inner Class ==================
+    public static class DialogueState {
+        private String id;
+        private String[] lines;
+        private int currentLineIndex = 0;
+
+        public DialogueState(String id, String[] lines) {
+            this.id = id;
+            this.lines = lines;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String[] getLines() {
+            return lines;
+        }
+
+        public void incrementLine() {
+            currentLineIndex++;
+        }
+
+        public ConfigurationSection getCurrentLineConfig() {
+            // placeholder สำหรับระบบ line config
+            return null;
+        }
+
+        public void setCurrentSection(String section) {
+            // placeholder สำหรับเปลี่ยน section
+        }
+
+        public File getDialogueFile() {
+            return new File(""); // placeholder
+        }
+    }
 
     // ================= DialogueRunner Inner Class ==================
     public static class DialogueRunner extends BukkitRunnable {
@@ -42,148 +107,7 @@ public class DialoguesEconomy extends JavaPlugin {
         private final Map<UUID, DialogueState> activeDialogues;
         private final boolean placeholderApiEnabled;
 
-        public DialogueRunner(DialoguesEconomy plugin, Player target, DialogueState state, Map<UUID, DialogueState>public class DialoguesEconomy extends JavaPlugin {
-    private Economy economy;
-
-    @Override
-    public void onEnable() {
-        // --- โหลด config.yml ---
-        saveDefaultConfig();
-
-        // --- โหลด dialogue.yml ---
-        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
-        if (!dialogueFile.exists()) {
-            saveResource("dialogue.yml", false);
-        }
-
-        // --- ตรวจสอบ Vault และตั้งค่า economy ---
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
-                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
-                getLogger().info("Vault Economy hooked successfully!");
-            } else {
-                getLogger().warning("Vault Economy service not found!");
-            }
-        } else {
-            getLogger().warning("Vault not found! Economy features will be disabled.");
-        }
-
-        getLogger().info("DialoguesEconomy enabled!");
-    }public class DialoguesEconomy extends JavaPlugin {
-    private Economy economy;
-
-    @Override
-    public void onEnable() {
-        // --- โหลด config.yml ---
-        saveDefaultConfig();
-
-        // --- โหลด dialogue.yml ---
-        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
-        if (!dialogueFile.exists()) {
-            saveResource("dialogue.yml", false);
-        }
-
-        // --- ตรวจสอบ Vault และตั้งค่า economy ---
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
-                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
-                getLogger().info("Vault Economy hooked successfully!");
-            } else {
-                getLogger().warning("Vault Economy service not found!");
-            }
-        } else {
-            getLogger().warning("Vault not found! Economy features will be disabled.");
-        }
-
-        getLogger().info("DialoguesEconomy enabled!");
-    }
-
-    // ================= DialogueState Inner Class ==================
-    public static class DialogueState {
-        private String id;
-        private String[] lines;
-
-        public DialogueState(String id, String[] lines) {
-            this.id = id;
-            this.lines = lines;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String[] getLines() {
-            return lines;
-        }
-    }
-}public class DialoguesEconomy extends JavaPlugin {
-    private Economy economy;
-
-    @Override
-    public void onEnable() {
-        // --- โหลด config.yml ---
-        saveDefaultConfig();
-
-        // --- โหลด dialogue.yml ---
-        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
-        if (!dialogueFile.exists()) {
-            saveResource("dialogue.yml", false);
-        }
-
-        // --- ตรวจสอบ Vault และตั้งค่า economy ---
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
-                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
-                getLogger().info("Vault Economy hooked successfully!");
-            } else {
-                getLogger().warning("Vault Economy service not found!");
-            }
-        } else {
-            getLogger().warning("Vault not found! Economy features will be disabled.");
-        }
-
-        getLogger().info("DialoguesEconomy enabled!");
-    }
-
-    // ================= DialogueState Inner Class ==================
-    public static class DialogueState {
-        private String id;
-        private String[] lines;
-
-        public DialogueState(String id, String[] lines) {
-            this.id = id;
-            this.lines = lines;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String[] getLines() {
-            return lines;
-        }
-    }
-                    
-
-    // ================= DialogueState Inner Class ==================
-    public static class DialogueState {
-        private String id;
-        private String[] lines;
-
-        public DialogueState(String id, String[] lines) {
-            this.id = id;
-            this.lines = lines;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String[] getLines() {
-            return lines;
-        }
-    }
-            } activeDialogues, boolean placeholderApiEnabled) {
+        public DialogueRunner(DialoguesEconomy plugin, Player target, DialogueState state, Map<UUID, DialogueState> activeDialogues, boolean placeholderApiEnabled) {
             this.plugin = plugin;
             this.target = target;
             this.state = state;
@@ -264,16 +188,22 @@ public class DialoguesEconomy extends JavaPlugin {
                     } catch (IllegalArgumentException e) { plugin.getLogger().log(Level.WARNING, "Invalid material: " + itemType); }
                     state.incrementLine();
                     break;
-
-                case "take_item":
+                    
+                    case "take_item":
                     String takeItemType = lineConfig.getString("item");
                     int takeItemAmount = lineConfig.getInt("amount", 1);
                     try {
                         Material material = Material.valueOf(takeItemType.toUpperCase());
                         int removedCount = removeItemFromInventory(target, material, takeItemAmount);
-                        if (removedCount < takeItemAmount) { target.sendMessage(ChatColor.RED + plugin.getConfig().getString("messages.chat-prefix") + " &cไม่สามารถยึด Item ได้ครบ!"); endDialogue("messages.dialogue-ended"); return; }
+                        if (removedCount < takeItemAmount) {
+                            target.sendMessage(ChatColor.RED + plugin.getConfig().getString("messages.chat-prefix") + " &cไม่สามารถยึด Item ได้ครบ!");
+                            endDialogue("messages.dialogue-ended");
+                            return;
+                        }
                         target.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("messages.chat-prefix") + " &cยึด " + removedCount + "x " + material.name() + " แล้ว"));
-                    } catch (IllegalArgumentException e) { plugin.getLogger().log(Level.WARNING, "Invalid material: " + takeItemType); }
+                    } catch (IllegalArgumentException e) {
+                        plugin.getLogger().log(Level.WARNING, "Invalid material: " + takeItemType);
+                    }
                     state.incrementLine();
                     break;
 
@@ -297,7 +227,10 @@ public class DialoguesEconomy extends JavaPlugin {
                     item.setAmount(stackSize - toRemove);
                     contents[i] = item.getAmount() == 0 ? null : item;
                     removedCount += toRemove;
-                    if (removedCount >= amount) { player.getInventory().setContents(contents); return removedCount; }
+                    if (removedCount >= amount) {
+                        player.getInventory().setContents(contents);
+                        return removedCount;
+                    }
                 }
             }
             player.getInventory().setContents(contents);
@@ -307,7 +240,10 @@ public class DialoguesEconomy extends JavaPlugin {
         private void endDialogue(String endMessageConfigPath) {
             String endMsg = plugin.getConfig().getString(endMessageConfigPath);
             String prefix = plugin.getConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
-            if (endMsg != null) { endMsg = endMsg.replace("%chat-prefix%", prefix); target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg)); }
+            if (endMsg != null) {
+                endMsg = endMsg.replace("%chat-prefix%", prefix);
+                target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg));
+            }
             activeDialogues.remove(target.getUniqueId());
             this.cancel();
         }
@@ -317,14 +253,22 @@ public class DialoguesEconomy extends JavaPlugin {
             if (npcName != null) translatedLine = ChatColor.translateAlternateColorCodes('&', npcName + ": &r" + line);
 
             switch (displayMode.toLowerCase()) {
-                case "title": player.sendTitle(translatedLine, "", 10, 70, 20); break;
-                case "actionbar": player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(translatedLine)); break;
+                case "title":
+                    player.sendTitle(translatedLine, "", 10, 70, 20);
+                    break;
+                case "actionbar":
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(translatedLine));
+                    break;
                 case "chat":
-                default: player.sendMessage(translatedLine); break;
+                default:
+                    player.sendMessage(translatedLine);
+                    break;
             }
 
             String soundName = plugin.getConfig().getString("settings.default-sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            try { player.playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase()), 1f, 1f); } catch (IllegalArgumentException ignored) {}
+            try {
+                player.playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase()), 1f, 1f);
+            } catch (IllegalArgumentException ignored) {}
         }
 
         private void sendChoice(Player player, String text, String action) {
@@ -337,7 +281,9 @@ public class DialoguesEconomy extends JavaPlugin {
                 choiceComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, secretCommand));
                 choiceComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.GREEN + "Click to choose: " + targetSection)));
                 player.spigot().sendMessage(choiceComponent);
-            } else player.sendMessage(ChatColor.RED + "Error in choice action: " + action);
+            } else {
+                player.sendMessage(ChatColor.RED + "Error in choice action: " + action);
+            }
         }
     }
-}
+        }
