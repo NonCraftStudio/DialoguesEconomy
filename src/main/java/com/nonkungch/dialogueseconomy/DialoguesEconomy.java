@@ -32,6 +32,44 @@ public class DialoguesEconomy extends JavaPlugin {
 
 public class DialoguesEconomy extends JavaPlugin {
 
+
+
+    // ================= DialogueRunner Inner Class ==================
+    public static class DialogueRunner extends BukkitRunnable {
+        private final DialoguesEconomy plugin;
+        private final Player target;
+        private final DialogueState state;
+        private final Map<UUID, DialogueState> activeDialogues;
+        private final boolean placeholderApiEnabled;
+
+        public DialogueRunner(DialoguesEconomy plugin, Player target, DialogueState state, Map<UUID, DialogueState>public class DialoguesEconomy extends JavaPlugin {
+    private Economy economy;
+
+    @Override
+    public void onEnable() {
+        // --- โหลด config.yml ---
+        saveDefaultConfig();
+
+        // --- โหลด dialogue.yml ---
+        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
+        if (!dialogueFile.exists()) {
+            saveResource("dialogue.yml", false);
+        }
+
+        // --- ตรวจสอบ Vault และตั้งค่า economy ---
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
+                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+                getLogger().info("Vault Economy hooked successfully!");
+            } else {
+                getLogger().warning("Vault Economy service not found!");
+            }
+        } else {
+            getLogger().warning("Vault not found! Economy features will be disabled.");
+        }
+
+        getLogger().info("DialoguesEconomy enabled!");
+    }public class DialoguesEconomy extends JavaPlugin {
     private Economy economy;
 
     @Override
@@ -62,32 +100,90 @@ public class DialoguesEconomy extends JavaPlugin {
 
     // ================= DialogueState Inner Class ==================
     public static class DialogueState {
-        // โค้ดของ DialogueState
-        private final File dialogueFile;
-        private int currentLine = 0;
-        private String currentSection = "start";
+        private String id;
+        private String[] lines;
 
-        public DialogueState(File file) { this.dialogueFile = file; }
+        public DialogueState(String id, String[] lines) {
+            this.id = id;
+            this.lines = lines;
+        }
 
-        public File getDialogueFile() { return dialogueFile; }
+        public String getId() {
+            return id;
+        }
 
-        // TODO: ใส่โค้ดโหลด ConfigurationSection จากไฟล์ dialogue.yml
-        public ConfigurationSection getCurrentLineConfig() { return null; }
+        public String[] getLines() {
+            return lines;
+        }
+    }
+}public class DialoguesEconomy extends JavaPlugin {
+    private Economy economy;
 
-        public void incrementLine() { currentLine++; }
-        public void setCurrentSection(String section) { currentSection = section; }
-        public List<String> getSections() { return List.of("start","nextSection"); }
+    @Override
+    public void onEnable() {
+        // --- โหลด config.yml ---
+        saveDefaultConfig();
+
+        // --- โหลด dialogue.yml ---
+        File dialogueFile = new File(getDataFolder(), "dialogue.yml");
+        if (!dialogueFile.exists()) {
+            saveResource("dialogue.yml", false);
+        }
+
+        // --- ตรวจสอบ Vault และตั้งค่า economy ---
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            if (getServer().getServicesManager().getRegistration(Economy.class) != null) {
+                economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+                getLogger().info("Vault Economy hooked successfully!");
+            } else {
+                getLogger().warning("Vault Economy service not found!");
+            }
+        } else {
+            getLogger().warning("Vault not found! Economy features will be disabled.");
+        }
+
+        getLogger().info("DialoguesEconomy enabled!");
     }
 
-    // ================= DialogueRunner Inner Class ==================
-    public static class DialogueRunner extends BukkitRunnable {
-        private final DialoguesEconomy plugin;
-        private final Player target;
-        private final DialogueState state;
-        private final Map<UUID, DialogueState> activeDialogues;
-        private final boolean placeholderApiEnabled;
+    // ================= DialogueState Inner Class ==================
+    public static class DialogueState {
+        private String id;
+        private String[] lines;
 
-        public DialogueRunner(DialoguesEconomy plugin, Player target, DialogueState state, Map<UUID, DialogueState> activeDialogues, boolean placeholderApiEnabled) {
+        public DialogueState(String id, String[] lines) {
+            this.id = id;
+            this.lines = lines;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String[] getLines() {
+            return lines;
+        }
+    }
+                    
+
+    // ================= DialogueState Inner Class ==================
+    public static class DialogueState {
+        private String id;
+        private String[] lines;
+
+        public DialogueState(String id, String[] lines) {
+            this.id = id;
+            this.lines = lines;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String[] getLines() {
+            return lines;
+        }
+    }
+            } activeDialogues, boolean placeholderApiEnabled) {
             this.plugin = plugin;
             this.target = target;
             this.state = state;
