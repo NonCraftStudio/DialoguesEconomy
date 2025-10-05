@@ -2,164 +2,228 @@ package com.nonkungch.dialogueseconomy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.logging.Level;
 
-import net.milkbowl.vault.economy.Economy; // <-- Import สำหรับ Vault
+// Imports สำหรับ BungeeChat API
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
+import net.md_5.bungee.api.ChatMessageType;
+
+// Imports สำหรับ PlaceholderAPI และ Vault
+import me.clip.placeholderapi.PlaceholderAPI;
+import net.milkbowl.vault.economy.Economy;
 
 public class DialoguesEconomy extends JavaPlugin {
 
-    private FileConfiguration config;
-    private final File dialoguesFolder = new File(getDataFolder(), "dialogues");
-    
+    private static Economy economy;
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
-    private boolean placeholderApiEnabled = false;
-    
-    private static Economy econ = null; // <-- ตัวแปร Vault Economy
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        config = getConfig();
-        if (!dialoguesFolder.exists()) dialoguesFolder.mkdirs(); 
-        
-        // Setup Vault Economy
-        if (!setupEconomy() ) {
-            getLogger().warning(String.format("[%s] - Vault Economy not found. Economy features will be disabled.", getDescription().getName()));
-            // ไม่ต้อง disable plugin แต่ฟีเจอร์เงินจะถูกเตือน
-        }
 
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            placeholderApiEnabled = true;
-            getLogger().info("PlaceholderAPI found and enabled.");
-        } else {
-            getLogger().warning("PlaceholderAPI not found. Dialogue placeholders will not work.");
+        // Vault setup
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
         }
-        
-        getLogger().info("DialoguesEconomy enabled!");
-    }
-    
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
-        econ = rsp.getProvider();
-        return econ != null;
-    }
-    
-    public static Economy getEconomy() {
-        return econ;
     }
 
-    @Override
-    public void onDisable() {
-        getLogger().info("DialoguesEconomy disabled!");
+    public static Economy getEconomy() { return economy; }
+
+    public Map<UUID, DialogueState> getActiveDialogues() { return activeDialogues; }
+
+    // ================= DialogueState Inner Class ==================
+    public static class DialogueState {
+        private final File dialogueFile;
+        private int currentLine = 0;
+        private String currentSection = "start";
+
+        public DialogueState(File file) { this.dialogueFile = file; }
+
+        public File getDialogueFile() { return dialogueFile; }
+
+        // TODO: ใส่โค้ดโหลด ConfigurationSection จากไฟล์ dialogue.yml
+        public ConfigurationSection getCurrentLineConfig() { return null; }
+
+        public void incrementLine() { currentLine++; }
+        public void setCurrentSection(String section) { currentSection = section; }
+        public List<String> getSections() { return List.of("start","nextSection"); }
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getName().equalsIgnoreCase("dialogue")) {
-            
-            // /dialogue click
-            if (args.length >= 4 && args[0].equalsIgnoreCase("click")) {
-                Player target = Bukkit.getPlayer(args[1]);
-                if (target == null) return true;
-                
-                String filename = args[2];
-                String nextSection = args[3];
-                
-                DialogueState currentState = activeDialogues.get(target.getUniqueId());
-                if (currentState == null || !currentState.getDialogueFile().getName().equalsIgnoreCase(filename)) {
-                    target.sendMessage(ChatColor.RED + "Dialogue session expired or invalid.");
-                    return true;
-                }
-                
-                initiateDialogue(target, target, filename, nextSection);
-                return true;
+    // ================= DialogueRunner Inner Class ==================
+    public static class DialogueRunner extends BukkitRunnable {
+        private final DialoguesEconomy plugin;
+        private final Player target;
+        private final DialogueState state;
+        private final Map<UUID, DialogueState> activeDialogues;
+        private final boolean placeholderApiEnabled;
+
+        public DialogueRunner(DialoguesEconomy plugin, Player target, DialogueState state, Map<UUID, DialogueState> activeDialogues, boolean placeholderApiEnabled) {
+            this.plugin = plugin;
+            this.target = target;
+            this.state = state;
+            this.activeDialogues = activeDialogues;
+            this.placeholderApiEnabled = placeholderApiEnabled;
+        }
+
+        @Override
+        public void run() {
+            ConfigurationSection lineConfig = state.getCurrentLineConfig();
+            if (lineConfig == null) { endDialogue("messages.dialogue-ended"); return; }
+
+            String type = lineConfig.getString("type", "text");
+            String lineText = lineConfig.getString("line", "");
+            int delay = lineConfig.getInt("delay", plugin.getConfig().getInt("settings.default-delay", 20));
+
+            String finalLine = lineText.replace("%player_name%", target.getName());
+            if (placeholderApiEnabled) {
+                finalLine = PlaceholderAPI.setPlaceholders(target, finalLine);
             }
-            
-            // /dialogue run
-            if (args.length >= 2 && args[0].equalsIgnoreCase("run")) {
-                String filename = args[1] + ".yml";
-                Player target = (args.length >= 3) ? Bukkit.getPlayer(args[2]) : null;
-                String section = (args.length > 3) ? args[3] : "start"; 
-                
-                if (target == null && sender instanceof Player) {
-                    target = (Player) sender;
-                } else if (target == null) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /dialogue run <filename> <player> [section]");
-                    return true;
-                }
-                
-                // Player Busy Check
-                if (activeDialogues.containsKey(target.getUniqueId())) {
-                    String busyMessage = config.getString("messages.player-busy", "&cYou are already in a dialogue!");
-                    target.sendMessage(ChatColor.translateAlternateColorCodes('&', busyMessage));
-                    return true;
-                } 
 
-                initiateDialogue(sender, target, filename, section);
-                return true;
-            } 
-            
-            // /dialogue reload
-            if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
-                reloadConfig();
-                config = getConfig(); 
-                sender.sendMessage(ChatColor.GREEN + "DialoguesEconomy config reloaded!");
-                return true;
+            switch (type.toLowerCase()) {
+                case "text":
+                    sendLine(target, finalLine, lineConfig.getString("display", "chat"), lineConfig.getString("npc", null));
+                    state.incrementLine();
+                    break;
+
+                case "command":
+                    String commandStr = lineConfig.getString("command", finalLine.replace("%player_name%", target.getName()));
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandStr);
+                    state.incrementLine();
+                    break;
+
+                case "choice":
+                    sendChoice(target, finalLine, lineConfig.getString("action", ""));
+                    this.cancel();
+                    return;
+
+                case "end":
+                    endDialogue(lineConfig.getString("message", "messages.dialogue-ended"));
+                    return;
+
+                case "check_money":
+                    double requiredMoney = lineConfig.getDouble("amount", 0.0);
+                    double playerBalance = 0.0;
+                    if (DialoguesEconomy.getEconomy() != null) {
+                        playerBalance = DialoguesEconomy.getEconomy().getBalance(target);
+                    } else {
+                        plugin.getLogger().warning("Vault Economy is not setup. Skipping money check.");
+                        state.incrementLine();
+                        break;
+                    }
+                    if (playerBalance < requiredMoney) {
+                        String failSection = lineConfig.getString("fail_goto");
+                        if (failSection != null) state.setCurrentSection(failSection);
+                        else { endDialogue("messages.dialogue-ended"); return; }
+                    } else state.incrementLine();
+                    break;
+
+                case "take_money":
+                    double takeAmount = lineConfig.getDouble("amount", 0.0);
+                    if (DialoguesEconomy.getEconomy() != null) {
+                        DialoguesEconomy.getEconomy().withdrawPlayer(target, takeAmount);
+                        String currency = DialoguesEconomy.getEconomy().currencyNamePlural();
+                        target.sendMessage(ChatColor.YELLOW + plugin.getConfig().getString("messages.chat-prefix") + " &cหักเงิน " + takeAmount + " " + currency);
+                    } else target.sendMessage(ChatColor.RED + plugin.getConfig().getString("messages.chat-prefix") + " &cไม่สามารถหักเงินได้: Vault Economy ไม่พร้อมใช้งาน");
+                    state.incrementLine();
+                    break;
+
+                case "give_item":
+                    String itemType = lineConfig.getString("item");
+                    int itemAmount = lineConfig.getInt("amount", 1);
+                    try {
+                        Material material = Material.valueOf(itemType.toUpperCase());
+                        ItemStack item = new ItemStack(material, itemAmount);
+                        target.getInventory().addItem(item);
+                        target.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("messages.chat-prefix") + " &aได้รับ " + itemAmount + "x " + material.name()));
+                    } catch (IllegalArgumentException e) { plugin.getLogger().log(Level.WARNING, "Invalid material: " + itemType); }
+                    state.incrementLine();
+                    break;
+
+                case "take_item":
+                    String takeItemType = lineConfig.getString("item");
+                    int takeItemAmount = lineConfig.getInt("amount", 1);
+                    try {
+                        Material material = Material.valueOf(takeItemType.toUpperCase());
+                        int removedCount = removeItemFromInventory(target, material, takeItemAmount);
+                        if (removedCount < takeItemAmount) { target.sendMessage(ChatColor.RED + plugin.getConfig().getString("messages.chat-prefix") + " &cไม่สามารถยึด Item ได้ครบ!"); endDialogue("messages.dialogue-ended"); return; }
+                        target.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("messages.chat-prefix") + " &cยึด " + removedCount + "x " + material.name() + " แล้ว"));
+                    } catch (IllegalArgumentException e) { plugin.getLogger().log(Level.WARNING, "Invalid material: " + takeItemType); }
+                    state.incrementLine();
+                    break;
+
+                default:
+                    plugin.getLogger().warning("Unknown dialogue type: " + type);
+                    state.incrementLine();
+                    break;
             }
+
+            new DialogueRunner(plugin, target, state, activeDialogues, placeholderApiEnabled).runTaskLater(plugin, delay);
         }
 
-        // คำสั่ง /balance
-        if (command.getName().equalsIgnoreCase("balance")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                // ใช้ Vault API จริง
-                if (econ != null) {
-                    String balanceStr = String.format("%.2f", econ.getBalance(player));
-                    String currency = econ.currencyNamePlural();
-                    player.sendMessage(ChatColor.GOLD + "Your balance: " + balanceStr + " " + currency);
-                } else {
-                    player.sendMessage(ChatColor.RED + "Economy system is not available. Install Vault and an economy plugin.");
+        private int removeItemFromInventory(Player player, Material material, int amount) {
+            int removedCount = 0;
+            ItemStack[] contents = player.getInventory().getContents();
+            for (int i = 0; i < contents.length; i++) {
+                ItemStack item = contents[i];
+                if (item != null && item.getType() == material) {
+                    int stackSize = item.getAmount();
+                    int toRemove = Math.min(amount - removedCount, stackSize);
+                    item.setAmount(stackSize - toRemove);
+                    contents[i] = item.getAmount() == 0 ? null : item;
+                    removedCount += toRemove;
+                    if (removedCount >= amount) { player.getInventory().setContents(contents); return removedCount; }
                 }
-                return true;
             }
-        }
-        return false;
-    }
-    
-    private void initiateDialogue(CommandSender caller, Player target, String filename, String section) {
-        File file = new File(dialoguesFolder, filename);
-        if (!file.exists()) {
-            caller.sendMessage(ChatColor.RED + "Dialogue file not found: " + filename);
-            return;
+            player.getInventory().setContents(contents);
+            return removedCount;
         }
 
-        FileConfiguration dialogueConfig = YamlConfiguration.loadConfiguration(file);
-        
-        DialogueState state = new DialogueState(file, dialogueConfig, section);
-        activeDialogues.put(target.getUniqueId(), state);
-        
-        new DialogueRunner(this, target, state, activeDialogues, placeholderApiEnabled).runTask(this);
-        
-        if (caller instanceof Player) {
-            String startMsg = config.getString("messages.dialogue-started");
-            if (startMsg != null) target.sendMessage(ChatColor.translateAlternateColorCodes('&', startMsg));
+        private void endDialogue(String endMessageConfigPath) {
+            String endMsg = plugin.getConfig().getString(endMessageConfigPath);
+            String prefix = plugin.getConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
+            if (endMsg != null) { endMsg = endMsg.replace("%chat-prefix%", prefix); target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg)); }
+            activeDialogues.remove(target.getUniqueId());
+            this.cancel();
+        }
+
+        private void sendLine(Player player, String line, String displayMode, String npcName) {
+            String translatedLine = ChatColor.translateAlternateColorCodes('&', line);
+            if (npcName != null) translatedLine = ChatColor.translateAlternateColorCodes('&', npcName + ": &r" + line);
+
+            switch (displayMode.toLowerCase()) {
+                case "title": player.sendTitle(translatedLine, "", 10, 70, 20); break;
+                case "actionbar": player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(translatedLine)); break;
+                case "chat":
+                default: player.sendMessage(translatedLine); break;
+            }
+
+            String soundName = plugin.getConfig().getString("settings.default-sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+            try { player.playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase()), 1f, 1f); } catch (IllegalArgumentException ignored) {}
+        }
+
+        private void sendChoice(Player player, String text, String action) {
+            DialogueState state = activeDialogues.get(player.getUniqueId());
+            if (state == null) return;
+            TextComponent choiceComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
+            if (action.startsWith("goto:")) {
+                String targetSection = action.substring(5);
+                String secretCommand = String.format("/dialogue click %s %s %s", player.getName(), state.getDialogueFile().getName(), targetSection);
+                choiceComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, secretCommand));
+                choiceComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.GREEN + "Click to choose: " + targetSection)));
+                player.spigot().sendMessage(choiceComponent);
+            } else player.sendMessage(ChatColor.RED + "Error in choice action: " + action);
         }
     }
 }
