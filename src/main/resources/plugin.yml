@@ -1,0 +1,30 @@
+name: DialoguesEconomy
+main: com.nonkungch.dialogueseconomy.DialoguesEconomy
+version: 1.0.0
+api-version: 1.21
+author: NonKungCh
+description: A powerful and interactive dialogue and quest system integrated with economy.
+
+commands:
+  dialogue:
+    description: Main command for managing and running dialogues.
+    usage: /dialogue <create|run|reload>
+    # กำหนด permission node สำหรับคำสั่งนี้ (สำหรับผู้ดูแล/โอเปอเรเตอร์เท่านั้น)
+    permission: dialogues.admin
+    permission-message: §cYou do not have permission to manage dialogues.
+  
+  balance:
+    description: Show your current money balance.
+    usage: /balance
+    # คำสั่งนี้ทุกคนใช้ได้ ดังนั้นเราไม่จำเป็นต้องใส่ permission node หรือกำหนดให้ทุกคนใช้ได้เป็นค่าเริ่มต้น
+    
+# --- Permissions Section (ส่วนที่เพิ่ม) ---
+permissions:
+  # สิทธิ์สำหรับผู้ดูแล/โอเปอเรเตอร์: ใช้คำสั่ง /dialogue create, run, reload
+  dialogues.admin:
+    description: Allows access to all dialogue management commands.
+    default: op # กำหนดให้ Operator (OP) ได้รับสิทธิ์นี้โดยอัตโนมัติ
+  
+  # สิทธิ์สำหรับผู้เล่นทั่วไป: ใช้คำสั่ง /balance
+  # เราจะไม่กำหนด permission node ให้ /balance ใน commands section 
+  # แต่ถ้าต้องการควบคุม /balance อย่างละเอียด ก็ควรเพิ่ม node เช่น dialogues.balance: default: true
