@@ -8,67 +8,67 @@ Author: NonKungCh (NonCraftStudio)
 
 ---
 
-”9Þ8 2Ï22Ó92Ó32Ñ22Ô02Ñ42Ó82Ò2 / Description
+ðŸ“– à¸„à¸³à¸­à¸˜à¸´à¸šà¸²à¸¢ / Description
 
-DialoguesEconomy 2Õ22Ñ52Õ92Ñ32Ò32Ó62Ñ42Ñ4 Dialogue + Economy 2Ó02Ó92Ó12Ò32Ó72Ñ42Õ22Ï92Ô02Ò32Ö42Ñ92Õ22Ò72Ó32Ò32Ö4 Minecraft
+DialoguesEconomy à¹€à¸›à¹‡à¸™à¸£à¸°à¸šà¸š Dialogue + Economy à¸ªà¸³à¸«à¸£à¸±à¸šà¹€à¸‹à¸´à¸£à¹Œà¸Ÿà¹€à¸§à¸­à¸£à¹Œ Minecraft
 
-2Õ32Ó02Ð82Ï52Ï02Ö12Ó32Ï22Ò72Ó82Ò1 NPC, ActionBar, Title
+à¹à¸ªà¸”à¸‡à¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡ NPC, ActionBar, Title
 
-2Ò32Ó32Ï52Ò32Ó72Ñ4 Choice / 2Ð92Ó72Ò72Õ22Ò52Ô32Ó32Î92Ñ12Ô12Ö02Ï22Ò52Ô02Î92Õ62Ð82Ö1
+à¸£à¸­à¸‡à¸£à¸±à¸š Choice / à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸à¸—à¸µà¹ˆà¸„à¸¥à¸´à¸à¹„à¸”à¹‰
 
-2Ð92Ò32Ò72Ï62Ó02Ó32Ñ42Õ32Ò52Ó62Ï62Ó72Ð82Î92Ó82Ò32Õ22Ï52Ô02Ñ32Ñ62Ô52Ö12Õ22Ò52Ö02Ñ32Ñ62Ö02Ó82Ñ3 Vault
+à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¹à¸¥à¸°à¸ˆà¸±à¸”à¸à¸²à¸£à¹€à¸‡à¸´à¸™à¸œà¸¹à¹‰à¹€à¸¥à¹ˆà¸™à¸œà¹ˆà¸²à¸™ Vault
 
-2Õ52Ó12Ö12Õ32Ò52Ó62Ò22Ô22Ð82Õ62Ó32Õ22Ñ12Ò1
+à¹ƒà¸«à¹‰à¹à¸¥à¸°à¸¢à¸¶à¸”à¹„à¸­à¹€à¸—à¸¡
 
-2Ò32Ó32Ï52Ò32Ó72Ñ4 PlaceholderAPI
-
-
-Features / 2Ï22Ô42Ð72Ó02Ò12Ñ42Ó72Ð92Ô0
-
-7¼3 2Ó02Ñ32Ó72Ñ42Ó02Ñ32Ô42Ñ3 HoverEvent 2Ï02Ö12Ó32Ï22Ò72Ó82Ò12Ó12Ò52Ó82Ò22Ñ42Ò32Ò32Ñ12Ó72Ð8
-
-7¼3 2Ò32Ó32Ï52Ò32Ó72Ñ4 Placeholder 2Õ22Ï82Ö02Ñ3 %player_name%
-
-7¼3 2Ò32Ó62Ñ42Ñ42Õ22Ò52Ô32Ó32Î92Ð92Ó72Ò72Õ22Ò52Ô32Ó32Î9 (Choice) 2Ñ82Ò32Ö12Ó32Ò1 ClickEvent
-
-7¼3 2Ï22Ó92Ó02Ó72Ö02Ï52Ï22Ò32Ñ42Õ32Ò52Ó62Ó02Ó82Ò12Ó82Ò32Ñ02Õ52Ï82Ö1 alias 2Õ62Ð82Ö1
+à¸£à¸­à¸‡à¸£à¸±à¸š PlaceholderAPI
 
 
+Features / à¸„à¸¸à¸“à¸ªà¸¡à¸šà¸±à¸•à¸´
 
----
+âœ… à¸ªà¸™à¸±à¸šà¸ªà¸™à¸¸à¸™ HoverEvent à¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡à¸«à¸¥à¸²à¸¢à¸šà¸£à¸£à¸—à¸±à¸”
 
-7±5„1‚5 2Î92Ó82Ò32Ð92Ô02Ð82Ð92Ó72Ö12Ï5 / Installation
+âœ… à¸£à¸­à¸‡à¸£à¸±à¸š Placeholder à¹€à¸Šà¹ˆà¸™ %player_name%
 
-1. 2Ð82Ó82Ò72Ñ32Ö42Õ42Ó12Ò52Ð8 .jar 2Ï62Ó82Î9 GitHub Releases
+âœ… à¸£à¸°à¸šà¸šà¹€à¸¥à¸·à¸­à¸à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸ (Choice) à¸žà¸£à¹‰à¸­à¸¡ ClickEvent
 
-
-2. 2Ò72Ó82Ï52Õ62Ñ92Ò52Ö4 .jar 2Ò52Ï52Õ52Ñ3 plugins 2Ï02Ó32Ï52Õ22Ï92Ô02Ò32Ö42Ñ92Õ22Ò72Ó32Ò32Ö4
-
-
-3. 2Ò32Ô12Ó02Ð92Ó82Ò32Ö42Ñ12Õ22Ï92Ô02Ò32Ö42Ñ92Õ22Ò72Ó32Ò32Ö4
-
-
-4. 2Ð92Ò32Ò72Ï62Ó02Ó32Ñ42Ò72Ö02Ó8 Vault 2Õ32Ò52Ó6 PlaceholderAPI 2Ñ12Ó92Ï52Ó82Ñ32Õ62Ð82Ö1
-
+âœ… à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸„à¸£à¸šà¹à¸¥à¸°à¸ªà¸²à¸¡à¸²à¸£à¸–à¹ƒà¸Šà¹‰ alias à¹„à¸”à¹‰
 
 
 
 ---
 
-•0•0„1‚5 2Ï22Ó92Ó02Ó72Ö02Ï5 / Commands
+âš™ï¸ à¸à¸²à¸£à¸•à¸´à¸”à¸•à¸±à¹‰à¸‡ / Installation
 
-Command	2Ò02Ó82Ò92Ó82Õ62Ñ12Ò2 / Thai	English
-
-/dialogue start <player> <file>	2Õ22Ò32Ô02Ö02Ò12Ñ42Ñ12Ó02Ñ32Ñ12Ñ32Ó82Î92Ó72Ñ42Ñ62Ô52Ö12Õ22Ò52Ö02Ñ3	Start a dialogue with a player
-/dialogue click <player> <file> <section>	2Õ22Ò52Ô32Ó32Î92Ð92Ó72Ò72Õ22Ò52Ô32Ó32Î92Ñ12Ô12Ö0 hover	Choose a hover option in dialogue
-/dialogue stop <player>	2Ò22Ô42Ð92Ô02Ñ42Ñ12Ó02Ñ32Ñ12Ñ32Ó82Î92Ó72Ñ42Ñ62Ô52Ö12Õ22Ò52Ö02Ñ3	Stop dialogue with a player
-/dialogue reload	2Õ42Ó12Ò52Ð8 config 2Õ52Ó12Ò12Ö0	Reload plugin configuration
-/dialogue create <file>	2Ó02Ò32Ö12Ó82Ï52Õ62Ñ92Ò52Ö4 dialogue 2Õ52Ó12Ò12Ö0	Create a new dialogue file
+1. à¸”à¸²à¸§à¸™à¹Œà¹‚à¸«à¸¥à¸” .jar à¸ˆà¸²à¸ GitHub Releases
 
 
-Aliases / 2Ï22Ó92Ó02Ó72Ö02Ï52Ò22Ö02Ó3
+2. à¸§à¸²à¸‡à¹„à¸Ÿà¸¥à¹Œ .jar à¸¥à¸‡à¹ƒà¸™ plugins à¸‚à¸­à¸‡à¹€à¸‹à¸´à¸£à¹Œà¸Ÿà¹€à¸§à¸­à¸£à¹Œ
 
-Alias	2Õ52Ï82Ö12Õ32Ñ12Ñ3 / Replace
+
+3. à¸£à¸µà¸ªà¸•à¸²à¸£à¹Œà¸—à¹€à¸‹à¸´à¸£à¹Œà¸Ÿà¹€à¸§à¸­à¸£à¹Œ
+
+
+4. à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸² Vault à¹à¸¥à¸° PlaceholderAPI à¸—à¸³à¸‡à¸²à¸™à¹„à¸”à¹‰
+
+
+
+
+---
+
+ðŸ› ï¸ à¸„à¸³à¸ªà¸±à¹ˆà¸‡ / Commands
+
+Command	à¸ à¸²à¸©à¸²à¹„à¸—à¸¢ / Thai	English
+
+/dialogue start <player> <file>	à¹€à¸£à¸´à¹ˆà¸¡à¸šà¸—à¸ªà¸™à¸—à¸™à¸²à¸à¸±à¸šà¸œà¸¹à¹‰à¹€à¸¥à¹ˆà¸™	Start a dialogue with a player
+/dialogue click <player> <file> <section>	à¹€à¸¥à¸·à¸­à¸à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸à¸—à¸µà¹ˆ hover	Choose a hover option in dialogue
+/dialogue stop <player>	à¸¢à¸¸à¸•à¸´à¸šà¸—à¸ªà¸™à¸—à¸™à¸²à¸à¸±à¸šà¸œà¸¹à¹‰à¹€à¸¥à¹ˆà¸™	Stop dialogue with a player
+/dialogue reload	à¹‚à¸«à¸¥à¸” config à¹ƒà¸«à¸¡à¹ˆ	Reload plugin configuration
+/dialogue create <file>	à¸ªà¸£à¹‰à¸²à¸‡à¹„à¸Ÿà¸¥à¹Œ dialogue à¹ƒà¸«à¸¡à¹ˆ	Create a new dialogue file
+
+
+Aliases / à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸¢à¹ˆà¸­
+
+Alias	à¹ƒà¸Šà¹‰à¹à¸—à¸™ / Replace
 
 /dia start <player> <file>	/dialogue start ...
 /dia click <player> <file> <section>	/dialogue click ...
@@ -77,7 +77,7 @@ Alias	2Õ52Ï82Ö12Õ32Ñ12Ñ3 / Replace
 /dia create <file>	/dialogue create ...
 
 
-2Ð92Ó72Ò72Ó32Ò22Ö02Ó82Ï5 / Example
+à¸•à¸±à¸§à¸­à¸¢à¹ˆà¸²à¸‡ / Example
 
 /dialogue start Notn Dialogue1
 /dialogue click Notn Dialogue1 SectionA
@@ -88,9 +88,9 @@ Alias	2Õ52Ï82Ö12Õ32Ñ12Ñ3 / Replace
 
 ---
 
-”9ß5 2Î92Ó82Ò32Ð92Ó72Ö12Ï52Ï22Ö02Ó8 / Configuration
+ðŸ“ à¸à¸²à¸£à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸² / Configuration
 
-2Ð92Ó72Ò72Ó32Ò22Ö02Ó82Ï5 dialogue.yml
+à¸•à¸±à¸§à¸­à¸¢à¹ˆà¸²à¸‡ dialogue.yml
 
 sections:
   start:
@@ -101,7 +101,7 @@ sections:
     - type: command
       line: "cmd: /give %player_name% diamond 1"
     - type: choice
-      line: "2Õ22Ò52Ô32Ó32Î92Ð92Ó72Ò72Õ22Ò52Ô32Ó32Î9:"
+      line: "à¹€à¸¥à¸·à¸­à¸à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸:"
       action: "goto:nextSection"
 
   nextSection:
@@ -118,21 +118,21 @@ sections:
 
 ---
 
-”9Ý8 Notes / 2Ó12Ò12Ó82Ò22Õ22Ó12Ð92Ô4
+ðŸ“Œ Notes / à¸«à¸¡à¸²à¸¢à¹€à¸«à¸•à¸¸
 
-HoverEvent 2Õ52Ï82Ö1 API 2Õ52Ó12Ò12Ö02Ï02Ó32Ï5 BungeeCord
+HoverEvent à¹ƒà¸Šà¹‰ API à¹ƒà¸«à¸¡à¹ˆà¸‚à¸­à¸‡ BungeeCord
 
-2Ò32Ó32Ï52Ò32Ó72Ñ42Ï02Ö12Ó32Ï22Ò72Ó82Ò12Ó12Ò52Ó82Ò22Ñ42Ò32Ò32Ñ12Ó72Ð82Õ52Ñ3 HoverEvent
+à¸£à¸­à¸‡à¸£à¸±à¸šà¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡à¸«à¸¥à¸²à¸¢à¸šà¸£à¸£à¸—à¸±à¸”à¹ƒà¸™ HoverEvent
 
-2Ð92Ò32Ò72Ï62Ó02Ó32Ñ42Ò72Ö02Ó8 Vault Economy 2Ñ82Ò32Ö12Ó32Ò12Õ52Ï82Ö12Ï52Ó82Ñ32Î92Ö02Ó32Ñ32Õ52Ï82Ö12Ï22Ó92Ó02Ó72Ö02Ï5 take_money / check_money
+à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸² Vault Economy à¸žà¸£à¹‰à¸­à¸¡à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸à¹ˆà¸­à¸™à¹ƒà¸Šà¹‰à¸„à¸³à¸ªà¸±à¹ˆà¸‡ take_money / check_money
 
-2Ò32Ó32Ï52Ò32Ó72Ñ4 PlaceholderAPI 2Ó02Ó92Ó12Ò32Ó72Ñ4 %player_name% 2Õ32Ò52Ó6 placeholders 2Ó32Ô32Ö02Ñ3 2Õ8
+à¸£à¸­à¸‡à¸£à¸±à¸š PlaceholderAPI à¸ªà¸³à¸«à¸£à¸±à¸š %player_name% à¹à¸¥à¸° placeholders à¸­à¸·à¹ˆà¸™ à¹†
 
 
 
 ---
 
-”9ß6 2Ð92Ô02Ð82Ð92Ö02Ó3 / Contact
+ðŸ“ž à¸•à¸´à¸”à¸•à¹ˆà¸­ / Contact
 
 Discord: NonKungCh#1234
 
