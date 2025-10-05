@@ -1,25 +1,40 @@
+# ชื่อ Plugin ต้องตรงกับชื่อไฟล์ JAR และ Class หลัก
 name: DialoguesEconomy
-version: 1.0
-main: com.yourname.dialogueplugin.DialoguesEconomy
-api-version: 1.13 
+main: com.nonkungch.dialogueseconomy.DialoguesEconomy
+version: 1.0.0 # กำหนดเวอร์ชันของคุณ
+api-version: 1.13 # หรือเวอร์ชันที่สูงกว่า (แนะนำ 1.16 ขึ้นไป)
+author: NonKungCh
 
-# ==================================
-# ข้อมูลผู้สร้าง
-# ==================================
-author: NonKungCh # ใส่ชื่อของคุณ หรือชื่อทีม
-website: https://github.com/NonCraftStudio/DialoguesEconomy # (ไม่บังคับ)
-
+# คำสั่ง (Commands)
 commands:
   dialogue:
-    description: Start or manage a dialogue sequence.
-    usage: /dialogue <id>
+    description: Start, stop, or manage dialogue sequences.
+    usage: |
+      /dialogue start <player> <file> - เริ่มบทสนทนา
+      /dialogue stop <player> - ยุติบทสนทนา
+      /dialogue create <file> - สร้างไฟล์ dialogue ใหม่
+      /dialogue reload - โหลด config ใหม่
+    permission: dialogueseconomy.admin
     aliases: [dia] 
-  dialogue_choice:
-    description: Internal command for dialogue choices. Do not use directly.
-    permission: dialogue.internal 
 
+  balance:
+    description: Shows your current economy balance using Vault.
+    usage: /balance
+    permission: dialogueseconomy.balance
+
+# Dependencies ที่จำเป็น
 depend:
   - Vault
-  - PlaceholderAPI 
+  
+# Dependencies ที่แนะนำ (ถ้ามี Plugin นี้ Plugin จะทำงานได้ดีขึ้น)
 softdepend:
-  - Floodgate
+  - PlaceholderAPI
+
+# Permissions (ตัวอย่าง)
+permissions:
+  dialogueseconomy.admin:
+    description: Allows full access to dialogue administration commands.
+    default: op
+  dialogueseconomy.balance:
+    description: Allows players to check their balance.
+    default: true
