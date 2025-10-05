@@ -1,9 +1,8 @@
-// ในไฟล์ใหม่: com.nonkungch.dialogueseconomy.DialogueState.java
-
 package com.nonkungch.dialogueseconomy;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.util.List;
@@ -27,13 +26,9 @@ public class DialogueState {
         return dialogueFile;
     }
 
-    public FileConfiguration getDialogueConfig() {
-        return dialogueConfig;
-    }
-
     public void setCurrentSection(String section) {
         this.currentSection = section;
-        this.currentLineIndex = 0; // รีเซ็ตบรรทัดเมื่อเปลี่ยน Section
+        this.currentLineIndex = 0;
     }
 
     public int getCurrentLineIndex() {
@@ -44,30 +39,22 @@ public class DialogueState {
         this.currentLineIndex++;
     }
 
+    /**
+     * ดึง ConfigurationSection ของบรรทัดบทสนทนาปัจจุบัน
+     */
     public ConfigurationSection getCurrentLineConfig() {
         ConfigurationSection section = dialogueConfig.getConfigurationSection(currentSection);
         if (section == null) return null;
         
-        // YamlConfiguration.getMapList() is safer than just getting a list directly
         List<Map<?, ?>> linesList = section.getMapList("lines");
         if (linesList == null || linesList.isEmpty() || currentLineIndex >= linesList.size()) {
-            return null;
+            return null; // จบบรรทัดใน Section นี้
         }
 
-        // ต้องสร้าง ConfigurationSection ชั่วคราวจาก Map เพื่อให้ใช้งานง่ายขึ้น
+        // แปลง Map เป็น ConfigurationSection ชั่วคราวเพื่ออ่านค่า
         Map<?, ?> lineMap = linesList.get(currentLineIndex);
-        if (lineMap instanceof ConfigurationSection) {
-            return (ConfigurationSection) lineMap;
-        }
-        
-        // สร้าง ConfigSection ชั่วคราวจาก Map (ถ้าจำเป็น)
         YamlConfiguration tempConfig = new YamlConfiguration();
         lineMap.forEach((key, value) -> tempConfig.set(key.toString(), value));
-        return tempConfig.getRoot();
-    }
-    
-    // เมธอดสำหรับดึง ConfigurationSection ปัจจุบัน
-    public ConfigurationSection getCurrentDialogueSection() {
-        return dialogueConfig.getConfigurationSection(currentSection);
+        return tempConfig;
     }
 }
