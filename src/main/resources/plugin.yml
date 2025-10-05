@@ -1,24 +1,25 @@
 name: DialoguesEconomy
-version: 1.0.1
-main: com.nonkungch.dialogueseconomy.DialoguesEconomy
-api-version: 1.21
-author: NonKungCh
-description: Dialogue + Economy system for Minecraft
+version: 1.0
+main: com.yourname.dialogueplugin.DialoguesEconomy
+api-version: 1.13 
 
-# Dependencies
-depend: [Vault, PlaceholderAPI]
+# ==================================
+# ข้อมูลผู้สร้าง
+# ==================================
+author: NonKungCh # ใส่ชื่อของคุณ หรือชื่อทีม
+website: https://github.com/NonCraftStudio/DialoguesEconomy # (ไม่บังคับ)
 
-# Commands
 commands:
   dialogue:
-    description: หลักสำหรับจัดการบทสนทนา / Main dialogue command
-    usage: /<command> <start|click|stop|reload|create> [args]
-    aliases: [dia]
-    permission: dialogue.use
-    permission-message: "&cคุณไม่มีสิทธิ์ใช้คำสั่งนี้!"
+    description: Start or manage a dialogue sequence.
+    usage: /dialogue <id>
+    aliases: [dia] 
+  dialogue_choice:
+    description: Internal command for dialogue choices. Do not use directly.
+    permission: dialogue.internal 
 
-# Permissions
-permissions:
-  dialogue.use:
-    description: ใช้คำสั่ง DialoguesEconomy ได้ / Can use dialogue commands
-    default: true
+depend:
+  - Vault
+  - PlaceholderAPI 
+softdepend:
+  - Floodgate
