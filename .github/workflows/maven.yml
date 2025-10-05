@@ -1,0 +1,36 @@
+# ชื่อ Workflow ที่จะแสดงในแท็บ Actions
+name: Maven Build and Artifact Upload
+
+# รันเมื่อมีการ Push โค้ดไปยัง Branch หลัก
+on:
+  push:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout: ดึงโค้ดจาก Repository
+    - uses: actions/checkout@v4
+    
+    # 2. Setup Java: ติดตั้ง Java 17 (ตามมาตรฐาน Spigot/Paper)
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
+    # 3. Build with Maven: รันคำสั่งคอมไพล์
+    - name: Build with Maven
+      run: mvn -B clean package --file pom.xml
+      
+    # 4. Upload Artifact: อัปโหลดไฟล์ .jar ที่ได้จากการ Build
+    - name: Upload JAR Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: DialoguesEconomy-Plugin-JAR
+        # โฟลเดอร์ที่ไฟล์ .jar จะถูกสร้างขึ้น (ตามค่าเริ่มต้นของ Maven)
+        path: target/*.jar
+        retention-days: 7
