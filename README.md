@@ -1,6 +1,6 @@
 :
 
-# ![DialoguesEconomy](https://img.shields.io/badge/DialoguesEconomy-v1.0.0-blue) DialoguesEconomy
+# ![DialoguesEconomy](https://img.shields.io/badge/DialoguesEconomy-v1.0.5-blue) DialoguesEconomy
 
 **Minecraft:** 1.21+ (Spigot/Paper)  
 **Java:** 21  
