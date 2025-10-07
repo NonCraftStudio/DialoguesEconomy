@@ -24,8 +24,9 @@ public class DialogueCommandExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
+        // [รองรับคำสั่งย่อ 'dia' และคำสั่ง 'dialogue']
         if (!command.getName().equalsIgnoreCase("dialogue") && !command.getName().equalsIgnoreCase("dia")) {
-            // กรณีเป็นคำสั่ง /balance
+            // กรณีเป็นคำสั่ง /balance ที่แยกออกมา
             if (command.getName().equalsIgnoreCase("balance") && sender instanceof Player) {
                 handleBalance((Player) sender);
                 return true;
@@ -44,7 +45,7 @@ public class DialogueCommandExecutor implements CommandExecutor {
             case "start":
                 handleStart(sender, args);
                 break;
-            // [สำคัญ] ลบ case "click" ออกไป เพราะใช้ระบบพิมพ์ตัวเลขแทน
+            // [สำคัญ] ลบ case "click" ออกไป เพราะใช้ DialogueChatListener จัดการแทน
             case "stop":
                 handleStop(sender, args);
                 break;
@@ -53,6 +54,9 @@ public class DialogueCommandExecutor implements CommandExecutor {
                 break;
             case "create":
                 handleCreate(sender, args);
+                break;
+            case "list":
+                handleList(sender);
                 break;
             default:
                 sendHelp(sender);
@@ -65,7 +69,7 @@ public class DialogueCommandExecutor implements CommandExecutor {
     // --- START DIALOGUE ---
     private void handleStart(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /dialogue start <player> <file>");
+            sender.sendMessage(ChatColor.RED + "Usage: /dia start <player> <file>");
             return;
         }
 
@@ -77,14 +81,14 @@ public class DialogueCommandExecutor implements CommandExecutor {
             return;
         }
 
-        // initiateDialogue จะจัดการล้างสถานะเก่าเอง
+        // initiateDialogue จะล้างสถานะเก่าเองก่อนเริ่ม
         plugin.initiateDialogue(sender, target, filename, "start");
     }
 
     // --- STOP DIALOGUE ---
     private void handleStop(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /dialogue stop <player>");
+            sender.sendMessage(ChatColor.RED + "Usage: /dia stop <player>");
             return;
         }
 
@@ -95,7 +99,8 @@ public class DialogueCommandExecutor implements CommandExecutor {
         }
 
         if (plugin.getActiveDialogues().remove(target.getUniqueId()) != null) {
-            plugin.getChatAwait().remove(target.getUniqueId()); // [สำคัญ] ล้างสถานะรอแชทด้วย
+            // [สำคัญ] ล้างสถานะรอแชท เมื่อสั่งหยุดด้วยคำสั่ง
+            plugin.getChatAwait().remove(target.getUniqueId());
             String endMsg = plugin.getMainConfig().getString("messages.dialogue-ended-admin", "&aDialogue with %player_name% forcefully stopped.");
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg.replace("%player_name%", target.getName())));
             target.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMainConfig().getString("messages.dialogue-ended", "&aDialogue ended.")));
@@ -113,7 +118,7 @@ public class DialogueCommandExecutor implements CommandExecutor {
     // --- CREATE DIALOGUE FILE ---
     private void handleCreate(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /dialogue create <filename>");
+            sender.sendMessage(ChatColor.RED + "Usage: /dia create <filename>");
             return;
         }
 
@@ -127,7 +132,7 @@ public class DialogueCommandExecutor implements CommandExecutor {
             return;
         }
 
-        // พยายามคัดลอกไฟล์ template จาก resources (สมมติว่ามี dialogue_template.yml)
+        // พยายามคัดลอกไฟล์ template จาก resources 
         try (InputStream is = plugin.getResource("dialogue_template.yml")) {
             if (is == null) {
                 // ถ้าไม่มี template ให้สร้างไฟล์เปล่า
@@ -143,8 +148,26 @@ public class DialogueCommandExecutor implements CommandExecutor {
             plugin.getLogger().severe("Could not create dialogue file: " + filename + " - " + e.getMessage());
         }
     }
+    
+    // --- LIST DIALOGUE FILES ---
+    private void handleList(CommandSender sender) {
+        File folder = plugin.getDialoguesFolder();
+        // กรองเฉพาะไฟล์ที่ลงท้ายด้วย .yml
+        File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".yml"));
 
-    // --- CHECK BALANCE ---
+        if (files == null || files.length == 0) {
+            sender.sendMessage(ChatColor.YELLOW + "No dialogue files found in the dialogues/ folder.");
+            return;
+        }
+
+        sender.sendMessage(ChatColor.GOLD + "--- Available Dialogue Files (.yml) ---");
+        for (File file : files) {
+            sender.sendMessage(ChatColor.YELLOW + "- " + file.getName());
+        }
+    }
+
+
+    // --- CHECK BALANCE (/balance) ---
     private void handleBalance(Player player) {
         if (DialoguesEconomy.getEconomy() != null) {
             String balanceStr = String.format("%.2f", DialoguesEconomy.getEconomy().getBalance(player));
@@ -157,11 +180,19 @@ public class DialogueCommandExecutor implements CommandExecutor {
 
     // --- HELP MESSAGE ---
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ---");
+        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ALL /dia ---");
+        sender.sendMessage(ChatColor.YELLOW + "/dia start <player> <file>");
+        sender.sendMessage(ChatColor.YELLOW + "/dia stop <player>");
+        sender.sendMessage(ChatColor.YELLOW + "/dia list");
+        sender.sendMessage(ChatColor.YELLOW + "/dia create <file>");
+        sender.sendMessage(ChatColor.YELLOW + "/dia reload");
+        sender.sendMessage(ChatColor.YELLOW + "/balance (or /dia balance)");
+        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ALL /dialogue ---");
         sender.sendMessage(ChatColor.YELLOW + "/dialogue start <player> <file>");
         sender.sendMessage(ChatColor.YELLOW + "/dialogue stop <player>");
+        sender.sendMessage(ChatColor.YELLOW + "/dialogue list");
         sender.sendMessage(ChatColor.YELLOW + "/dialogue create <file>");
         sender.sendMessage(ChatColor.YELLOW + "/dialogue reload");
-        sender.sendMessage(ChatColor.YELLOW + "/balance (or /dia balance)");
+        sender.sendMessage(ChatColor.GOLD + "------ END ------");
     }
 }
