@@ -1,7 +1,7 @@
 # ชื่อ Plugin ต้องตรงกับชื่อไฟล์ JAR และ Class หลัก
 name: DialoguesEconomy
 main: com.nonkungch.dialogueseconomy.DialoguesEconomy
-version: 1.0.0 # กำหนดเวอร์ชันของคุณ
+version: ${project.version} # กำหนดเวอร์ชันของคุณ
 api-version: 1.13 # หรือเวอร์ชันที่สูงกว่า (แนะนำ 1.16 ขึ้นไป)
 author: NonKungCh
 
