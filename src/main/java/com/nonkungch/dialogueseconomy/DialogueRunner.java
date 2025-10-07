@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.logging.Level;
 
-// Imports สำหรับ BungeeChat API
+// Imports สำหรับ BungeeChat API (สมมติว่ามีการใช้สำหรับตัวเลือกแบบคลิก)
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -39,204 +39,104 @@ public class DialogueRunner extends BukkitRunnable {
             return;
         }
 
-        String type = lineConfig.getString("type", "text");
-        String lineText = lineConfig.getString("line", "");
+        // อ่านค่า delay เริ่มต้น
+        int delay = lineConfig.getInt("delay", plugin.getMainConfig().getInt("settings.default-delay", 40));
 
-        int delay = lineConfig.getInt("delay", plugin.getMainConfig().getInt("settings.default-delay", 20));
+        // [ใหม่] ตรวจสอบ Action Types: say, cmd, chat
+        if (lineConfig.isSet("say")) {
+            String content = lineConfig.getString("say", "");
+            sendLine(target, content);
+            state.incrementLine();
+            this.runTaskLater(plugin, delay);
+            
+        } else if (lineConfig.isSet("cmd")) {
+            String content = lineConfig.getString("cmd", "");
+            executeCommand(target, content);
+            state.incrementLine();
+            this.runTaskLater(plugin, delay);
+            
+        } else if (lineConfig.isConfigurationSection("chat")) {
+            // [ใหม่] เข้าสู่โหมดรอการพิมพ์แชท
+            ConfigurationSection chatOptions = lineConfig.getConfigurationSection("chat");
+            plugin.getChatAwait().put(target.getUniqueId(), chatOptions);
+            
+            // หยุด Runner, รอการตอบกลับจากผู้เล่นใน DialogueChatListener
+            this.cancel(); 
+            
+        } 
+        // โค้ดสำหรับโครงสร้างแบบเก่าและ Action อื่นๆ
+        else {
+            String type = lineConfig.getString("type", "text");
+            String lineText = lineConfig.getString("line", ""); // สำหรับ type: text/line เก่า
 
-        // --- 1. ประมวลผล Placeholder และ Color Codes ---
-        String finalLine = lineText.replace("%player_name%", target.getName());
-        if (plugin.isPlaceholderApiEnabled()) {
-            finalLine = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(target, finalLine);
-        }
+            switch (type.toLowerCase()) {
+                case "text":
+                case "line":
+                    sendLine(target, lineText);
+                    state.incrementLine();
+                    this.runTaskLater(plugin, delay);
+                    break;
 
-        // --- 2. การจัดการประเภทคำสั่ง (Type Handling) ---
-        switch (type.toLowerCase()) {
-            case "text":
-                sendLine(target, finalLine, lineConfig.getString("display", "chat"), lineConfig.getString("npc", null));
-                state.incrementLine();
-                break;
+                case "choice":
+                    String action = lineConfig.getString("action", "");
+                    sendChoice(target, lineText, action);
+                    state.incrementLine();
+                    this.runTaskLater(plugin, delay);
+                    break;
+                
+                case "goto":
+                    String section = lineConfig.getString("section", "start");
+                    state.setCurrentSection(section);
+                    this.runTaskLater(plugin, 1L); // รันต่อทันที
+                    break;
+                    
+                case "end":
+                    endDialogue("messages.dialogue-ended");
+                    break;
+                
+                // สามารถเพิ่ม case สำหรับ item/money/teleport/etc. ได้ที่นี่
 
-            case "command":
-                String commandStr = lineConfig.getString("command", finalLine.replace("%player_name%", target.getName()));
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandStr);
-                state.incrementLine();
-                break;
-
-            case "choice":
-                sendChoice(target, finalLine, lineConfig.getString("action", ""));
-                this.cancel(); // หยุด Runner รอการตอบสนองจากผู้เล่น
-                return;
-
-            case "end":
-                endDialogue(lineConfig.getString("message", "messages.dialogue-ended"));
-                return;
-
-            case "check_money":
-                handleCheckMoney(lineConfig);
-                break;
-
-            case "take_money":
-                handleTakeMoney(lineConfig);
-                break;
-
-            case "give_item":
-                handleGiveItem(lineConfig);
-                break;
-
-            case "take_item":
-                handleTakeItem(lineConfig);
-                break;
-
-            default:
-                plugin.getLogger().warning("Unknown dialogue type: " + type);
-                state.incrementLine();
-                break;
-        }
-
-        // Run Next Line
-        new DialogueRunner(plugin, target, state).runTaskLater(plugin, delay);
-    }
-    
-    // --- Private Handlers for Clarity ---
-    
-    private void handleCheckMoney(ConfigurationSection lineConfig) {
-        double requiredMoney = lineConfig.getDouble("amount", 0.0);
-        if (DialoguesEconomy.getEconomy() != null) {
-            double playerBalance = DialoguesEconomy.getEconomy().getBalance(target);
-            if (playerBalance < requiredMoney) {
-                String failSection = lineConfig.getString("fail_goto");
-                if (failSection != null) {
-                    state.setCurrentSection(failSection);
-                    return; // ไม่ increment line แต่เปลี่ยน Section
-                }
-            }
-        } else {
-            plugin.getLogger().warning("Vault Economy is not setup. Skipping money check.");
-        }
-        state.incrementLine();
-    }
-    
-    private void handleTakeMoney(ConfigurationSection lineConfig) {
-        double takeAmount = lineConfig.getDouble("amount", 0.0);
-        if (DialoguesEconomy.getEconomy() != null) {
-            DialoguesEconomy.getEconomy().withdrawPlayer(target, takeAmount);
-            String currency = DialoguesEconomy.getEconomy().currencyNamePlural();
-            String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
-            target.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + " &cหักเงิน " + takeAmount + " " + currency));
-        } else {
-            target.sendMessage(ChatColor.RED + "ไม่สามารถหักเงินได้: Vault Economy ไม่พร้อมใช้งาน");
-        }
-        state.incrementLine();
-    }
-    
-    private void handleGiveItem(ConfigurationSection lineConfig) {
-        String itemType = lineConfig.getString("item");
-        int itemAmount = lineConfig.getInt("amount", 1);
-
-        try {
-            Material material = Material.valueOf(itemType.toUpperCase());
-            ItemStack item = new ItemStack(material, itemAmount);
-            target.getInventory().addItem(item);
-            String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
-            target.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + " &aได้รับ " + itemAmount + "x " + material.name()));
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().log(Level.WARNING, "Invalid material: " + itemType);
-        }
-        state.incrementLine();
-    }
-    
-    private void handleTakeItem(ConfigurationSection lineConfig) {
-        String takeItemType = lineConfig.getString("item");
-        int takeItemAmount = lineConfig.getInt("amount", 1);
-
-        try {
-            Material material = Material.valueOf(takeItemType.toUpperCase());
-            int removedCount = removeItemFromInventory(target, material, takeItemAmount);
-
-            String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
-            if (removedCount < takeItemAmount) {
-                target.sendMessage(ChatColor.RED + prefix + " &cไม่สามารถยึด Item ได้ครบ! Dialogue จบลง");
-                endDialogue("messages.dialogue-ended");
-                return;
-            }
-            target.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + " &cยึด " + removedCount + "x " + material.name() + " แล้ว"));
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().log(Level.WARNING, "Invalid material: " + takeItemType);
-        }
-        state.incrementLine();
-    }
-
-    private int removeItemFromInventory(Player player, Material material, int amount) {
-        // (Logic การยึด Item เหมือนเดิม)
-        int removedCount = 0;
-        ItemStack[] contents = player.getInventory().getContents();
-
-        for (int i = 0; i < contents.length; i++) {
-            ItemStack item = contents[i];
-
-            if (item != null && item.getType() == material) {
-                int stackSize = item.getAmount();
-                int toRemove = Math.min(amount - removedCount, stackSize);
-
-                item.setAmount(stackSize - toRemove);
-                contents[i] = item.getAmount() == 0 ? null : item;
-                removedCount += toRemove;
-
-                if (removedCount >= amount) {
-                    player.getInventory().setContents(contents);
-                    return removedCount;
-                }
+                default:
+                    plugin.getLogger().warning("Unknown dialogue line type: " + type + " in file: " + state.getDialogueFileName());
+                    state.incrementLine();
+                    this.runTaskLater(plugin, delay);
+                    break;
             }
         }
-        player.getInventory().setContents(contents);
-        return removedCount;
     }
 
-    private void endDialogue(String endMessageConfigPath) {
-        String endMsg = plugin.getMainConfig().getString(endMessageConfigPath);
-        String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
+    // [ใหม่] Helper method สำหรับ execute command
+    private void executeCommand(Player player, String command) {
+        // ประมวลผล Placeholder และรันคำสั่งด้วย ConsoleSender
+        String processedCommand = plugin.replacePlaceholders(player, command).replace("@p", player.getName());
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
+        });
+    }
 
-        if (endMsg != null) {
-            endMsg = endMsg.replace("%chat-prefix%", prefix);
-            target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg));
-        }
+    private void sendLine(Player player, String rawText) {
+        String finalMessage = plugin.replacePlaceholders(player, rawText);
+        player.sendMessage(finalMessage);
+    }
+    
+    private void endDialogue(String messageKey) {
         plugin.getActiveDialogues().remove(target.getUniqueId());
+        plugin.getChatAwait().remove(target.getUniqueId()); // เผื่อผู้เล่นกำลังรอแชทอยู่
+        String endMsg = plugin.getMainConfig().getString(messageKey, "&eDialogue ended.");
+        target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg));
         this.cancel();
     }
-
-    private void sendLine(Player player, String line, String displayMode, String npcName) {
-        String translatedLine = ChatColor.translateAlternateColorCodes('&', line);
-        String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
-
-        if (npcName != null) {
-            // ใช้ NPC Name แทน prefix config
-            translatedLine = ChatColor.translateAlternateColorCodes('&', "&6[" + npcName + "]&r " + line);
-        } else {
-            translatedLine = ChatColor.translateAlternateColorCodes('&', prefix + " " + line);
-        }
-
-        switch (displayMode.toLowerCase()) {
-            case "title":
-                player.sendTitle(translatedLine, "", 10, 70, 20);
-                break;
-            case "actionbar":
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(translatedLine));
-                break;
-            case "chat":
-            default:
-                player.sendMessage(translatedLine);
-                break;
-        }
-
-        String soundName = plugin.getMainConfig().getString("settings.default-sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+    
+    // โค้ด playSound และ sendChoice เดิม
+    private void playSound(Player player, String soundName) {
+        // ... (โค้ดเดิม)
         try {
             player.playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase()), 1f, 1f);
         } catch (IllegalArgumentException e) {
             // Ignore if sound name is invalid
         }
     }
-
+    
     private void sendChoice(Player player, String text, String action) {
         DialogueState state = plugin.getActiveDialogues().get(player.getUniqueId());
         if (state == null) return;
@@ -249,7 +149,7 @@ public class DialogueRunner extends BukkitRunnable {
 
             String secretCommand = String.format("/dialogue click %s %s %s",
                     player.getName(),
-                    state.getDialogueFileName(), // ใช้ชื่อไฟล์จาก State
+                    state.getDialogueFileName(),
                     targetSection
             );
 

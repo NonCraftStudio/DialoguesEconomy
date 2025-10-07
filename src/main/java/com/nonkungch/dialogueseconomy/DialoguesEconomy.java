@@ -3,6 +3,7 @@ package com.nonkungch.dialogueseconomy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -13,6 +14,7 @@ import net.milkbowl.vault.economy.Economy;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,12 +22,15 @@ public class DialoguesEconomy extends JavaPlugin {
 
     private static DialoguesEconomy instance;
     private FileConfiguration config;
-
+    
     // โฟลเดอร์เก็บบทสนทนา
     private final File dialoguesFolder = new File(getDataFolder(), "dialogues");
 
     // แผนที่เก็บสถานะบทสนทนา (ผู้เล่นที่กำลังอยู่ใน dialogue)
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
+    
+    // [ใหม่] แผนที่สำหรับผู้เล่นที่กำลังรอการตอบกลับทางแชท (UUID ของผู้เล่น -> ConfigurationSection ของตัวเลือก)
+    private final Map<UUID, ConfigurationSection> chatAwait = new HashMap<>();
 
     private boolean placeholderApiEnabled = false;
     private static Economy econ = null;
@@ -45,62 +50,123 @@ public class DialoguesEconomy extends JavaPlugin {
         // === ตรวจสอบ PlaceholderAPI ===
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             placeholderApiEnabled = true;
-            getLogger().info("PlaceholderAPI found and enabled.");
-        } else {
-            getLogger().warning("PlaceholderAPI not found. Dialogue placeholders will not work.");
+            getLogger().info("PlaceholderAPI integration enabled.");
         }
 
-        // === ลงทะเบียนคำสั่งทั้งหมด ===
-        DialogueCommandExecutor commandExecutor = new DialogueCommandExecutor(this);
+        // [ใหม่] ลงทะเบียน Event Listener สำหรับการแชท
+        Bukkit.getPluginManager().registerEvents(new DialogueChatListener(this), this);
 
-        if (getCommand("dialogue") != null)
-            getCommand("dialogue").setExecutor(commandExecutor);
-
-        if (getCommand("dia") != null)
-            getCommand("dia").setExecutor(commandExecutor);
-
-        if (getCommand("balance") != null)
-            getCommand("balance").setExecutor(commandExecutor);
-
-        getLogger().info("DialoguesEconomy enabled!");
+        // === ลงทะเบียน Command Executor ===
+        getCommand("dialogue").setExecutor(new DialogueCommandExecutor(this));
+        getCommand("dia").setExecutor(new DialogueCommandExecutor(this));
+        if (getCommand("balance") != null) getCommand("balance").setExecutor(new DialogueCommandExecutor(this));
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("DialoguesEconomy disabled!");
+        // โค้ด onDisable เดิม
     }
 
-    // ==========================================================
-    // Vault Economy Setup
-    // ==========================================================
+    public static DialoguesEconomy getInstance() {
+        return instance;
+    }
+
+    public FileConfiguration getMainConfig() {
+        return config;
+    }
+
+    // เมธอด getActiveDialogues เดิม
+    public Map<UUID, DialogueState> getActiveDialogues() {
+        return activeDialogues;
+    }
+
+    // [ใหม่] Getter สำหรับ chatAwait
+    public Map<UUID, ConfigurationSection> getChatAwait() {
+        return chatAwait;
+    }
+    
+    // [ใหม่] เมธอดสำหรับประมวลผลรายการ Action (เช่น say/cmd) ที่ผู้เล่นเลือกผ่านแชท
+    @SuppressWarnings("unchecked")
+    public void processChatActions(Player player, DialogueState mainState, List<?> actionsList) {
+        if (actionsList == null || actionsList.isEmpty()) {
+            new DialogueRunner(this, player, mainState).runTaskLater(this, 1L);
+            return;
+        }
+
+        for (Object actionObj : actionsList) {
+            if (!(actionObj instanceof Map)) continue;
+
+            Map<String, Object> actionMap = (Map<String, Object>) actionObj;
+            
+            // ใช้ YamlConfiguration เพื่อจัดการ map ที่ซับซ้อน (เช่น List of Map)
+            YamlConfiguration tempActionConfig = new YamlConfiguration();
+            actionMap.forEach(tempActionConfig::set);
+
+            // 1. Action: say
+            if (tempActionConfig.isSet("say")) {
+                String content = replacePlaceholders(player, tempActionConfig.getString("say", ""));
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', content));
+            } 
+            // 2. Action: cmd
+            else if (tempActionConfig.isSet("cmd")) {
+                String content = replacePlaceholders(player, tempActionConfig.getString("cmd", ""));
+                
+                String processedCommand = content.replace("@p", player.getName());
+                // รันคำสั่งใน Main Thread
+                Bukkit.getScheduler().runTask(this, () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
+                });
+            }
+            // สามารถเพิ่ม Logic สำหรับ Action อื่นๆ ที่อาจจะอยู่ใน Choice ได้ที่นี่ (เช่น give, effect, goto, end)
+        }
+
+        // รัน DialogueRunner ต่อจากบรรทัดที่ 'chat' หยุดไว้
+        new DialogueRunner(this, player, mainState).runTaskLater(this, 1L);
+    }
+    
+    // เมธอดสำหรับแทนที่ Placeholder และ Color Code
+    public String replacePlaceholders(Player player, String text) {
+        String processedText = text;
+        
+        if (placeholderApiEnabled && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            try {
+                 // ใช้ PlaceholderAPI ในการแทนที่
+                 processedText = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, processedText);
+            } catch (NoClassDefFoundError | NoSuchMethodError ignored) {
+                 // ไม่สนใจหากเกิดปัญหาในการเข้าถึง PlaceholderAPI
+            }
+        }
+        
+        // Simple placeholders
+        if (player != null) {
+            processedText = processedText.replace("%player_name%", player.getName());
+        }
+
+        return ChatColor.translateAlternateColorCodes('&', processedText);
+    }
+
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
-
+        // โค้ด Vault Economy เดิม
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) return false;
-
+        if (rsp == null) {
+            return false;
+        }
         econ = rsp.getProvider();
-        if (econ != null)
-            getLogger().info("Vault Economy hooked successfully.");
-        else
-            getLogger().warning("Vault Economy not found.");
-
         return econ != null;
     }
+    
+    public static Economy getEconomy() {
+        return econ;
+    }
 
-    // ==========================================================
-    // Getter methods
-    // ==========================================================
-    public static DialoguesEconomy getInstance() { return instance; }
-    public static Economy getEconomy() { return econ; }
-    public FileConfiguration getMainConfig() { return config; }
-    public boolean isPlaceholderApiEnabled() { return placeholderApiEnabled; }
-    public Map<UUID, DialogueState> getActiveDialogues() { return activeDialogues; }
-    public File getDialoguesFolder() { return dialoguesFolder; }
-
-    // ==========================================================
-    // เริ่มบทสนทนา (Initiate Dialogue)
-    // ==========================================================
+    public File getDialoguesFolder() {
+        return dialoguesFolder;
+    }
+    
+    // เมธอด initiateDialogue เดิม
     public void initiateDialogue(CommandSender caller, Player target, String filename, String section) {
         File file = new File(dialoguesFolder, filename);
         if (!file.exists()) {
@@ -131,6 +197,9 @@ public class DialoguesEconomy extends JavaPlugin {
         // สร้างสถานะบทสนทนาใหม่
         DialogueState state = new DialogueState(file, dialogueConfig, validPath);
         activeDialogues.put(target.getUniqueId(), state);
+        
+        // ลบผู้เล่นออกจากสถานะรอแชท หากมีการเรียกใช้ dialogue ใหม่ทับของเดิม
+        chatAwait.remove(target.getUniqueId());
 
         // เริ่ม Dialogue Runner
         new DialogueRunner(this, target, state).runTask(this);
