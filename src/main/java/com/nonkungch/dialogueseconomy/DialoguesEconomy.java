@@ -28,9 +28,14 @@ public class DialoguesEconomy extends JavaPlugin {
     private static DialoguesEconomy instance;
     private FileConfiguration config;
     
+    // โฟลเดอร์เก็บบทสนทนา
     private final File dialoguesFolder = new File(getDataFolder(), "dialogues");
+
+    // แผนที่เก็บสถานะบทสนทนา (ผู้เล่นที่กำลังอยู่ใน dialogue)
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
-    private final Map<UUID, ConfigurationSection> chatAwait = new HashMap<>();
+    
+    // [สำคัญ] แผนที่สำหรับผู้เล่นที่กำลังรอการตอบกลับทางแชท (สำหรับระบบพิมพ์ตัวเลข)
+    private final Map<UUID, ConfigurationSection> chatAwait = new HashMap<>(); 
 
     private boolean placeholderApiEnabled = false;
     private static Economy econ = null;
@@ -57,7 +62,7 @@ public class DialoguesEconomy extends JavaPlugin {
             getLogger().info("PlaceholderAPI integration enabled.");
         }
 
-        // ลงทะเบียน Event Listener สำหรับการแชท
+        // [สำคัญ] ลงทะเบียน Event Listener สำหรับการแชท (รองรับระบบพิมพ์ตัวเลข)
         Bukkit.getPluginManager().registerEvents(new DialogueChatListener(this), this);
 
         // === ลงทะเบียน Command Executor ===
@@ -99,11 +104,12 @@ public class DialoguesEconomy extends JavaPlugin {
     public Map<UUID, DialogueState> getActiveDialogues() {
         return activeDialogues;
     }
-
+    
+    // [สำคัญ] Getter สำหรับ Chat Await
     public Map<UUID, ConfigurationSection> getChatAwait() {
         return chatAwait;
     }
-    
+
     @SuppressWarnings("unchecked")
     public void processChatActions(Player player, DialogueState mainState, List<?> actionsList) {
         if (actionsList == null || actionsList.isEmpty()) {
@@ -176,14 +182,13 @@ public class DialoguesEconomy extends JavaPlugin {
     
     public void initiateDialogue(CommandSender caller, Player target, String filename, String section) {
         
-        // [แก้ไขใหม่] ตรวจสอบและเพิ่ม .yml ถ้าชื่อไฟล์ไม่มีนามสกุล
+        // ตรวจสอบและเพิ่ม .yml ถ้าชื่อไฟล์ไม่มีนามสกุล
         if (!filename.toLowerCase().endsWith(".yml")) {
             filename = filename + ".yml";
         }
         
         File file = new File(dialoguesFolder, filename);
         if (!file.exists()) {
-            // ตอนนี้จะแสดงชื่อไฟล์เต็ม เช่น "1.yml" ในข้อความแจ้งเตือน
             caller.sendMessage(ChatColor.RED + "Dialogue file not found: " + filename + " in dialogues/ folder.");
             return;
         }
@@ -196,7 +201,6 @@ public class DialoguesEconomy extends JavaPlugin {
         String validPath = section;
 
         for (String path : possiblePaths) {
-            // ใช้ dialogueConfig.get(path) != null เพื่อรองรับ List of Map ที่ระดับบนสุด
             if (dialogueConfig.get(path) != null) { 
                 found = true;
                 validPath = path;
@@ -209,12 +213,13 @@ public class DialoguesEconomy extends JavaPlugin {
             return;
         }
 
+        // [สำคัญ] ล้างสถานะเก่าก่อนเริ่ม Dialogue ใหม่
+        activeDialogues.remove(target.getUniqueId());
+        chatAwait.remove(target.getUniqueId());
+
         DialogueState state = new DialogueState(file, dialogueConfig, validPath);
         activeDialogues.put(target.getUniqueId(), state);
         
-        // ล้างสถานะรอแชท หากผู้เล่นเริ่ม dialogue ใหม่ทับของเดิม
-        chatAwait.remove(target.getUniqueId());
-
         // เริ่ม Dialogue Runner
         new DialogueRunner(this, target, state).runTask(this);
 
