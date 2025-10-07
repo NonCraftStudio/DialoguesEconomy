@@ -28,13 +28,8 @@ public class DialoguesEconomy extends JavaPlugin {
     private static DialoguesEconomy instance;
     private FileConfiguration config;
     
-    // โฟลเดอร์เก็บบทสนทนา
     private final File dialoguesFolder = new File(getDataFolder(), "dialogues");
-
-    // แผนที่เก็บสถานะบทสนทนา (ผู้เล่นที่กำลังอยู่ใน dialogue)
     private final Map<UUID, DialogueState> activeDialogues = new HashMap<>();
-    
-    // [ใหม่] แผนที่สำหรับผู้เล่นที่กำลังรอการตอบกลับทางแชท (UUID ของผู้เล่น -> ConfigurationSection ของตัวเลือก)
     private final Map<UUID, ConfigurationSection> chatAwait = new HashMap<>();
 
     private boolean placeholderApiEnabled = false;
@@ -49,7 +44,7 @@ public class DialoguesEconomy extends JavaPlugin {
         config = getConfig();
         if (!dialoguesFolder.exists()) dialoguesFolder.mkdirs();
 
-        // [ใหม่] สร้างไฟล์ตัวอย่าง Dialogue
+        // สร้างไฟล์ตัวอย่าง Dialogue
         saveDefaultDialogue("example.yml");
         saveDefaultDialogue("1.yml");
 
@@ -62,7 +57,7 @@ public class DialoguesEconomy extends JavaPlugin {
             getLogger().info("PlaceholderAPI integration enabled.");
         }
 
-        // [ใหม่] ลงทะเบียน Event Listener สำหรับการแชท
+        // ลงทะเบียน Event Listener สำหรับการแชท
         Bukkit.getPluginManager().registerEvents(new DialogueChatListener(this), this);
 
         // === ลงทะเบียน Command Executor ===
@@ -76,7 +71,7 @@ public class DialoguesEconomy extends JavaPlugin {
         // ...
     }
     
-    // [ใหม่] เมธอดสำหรับบันทึกไฟล์ Dialogue ตัวอย่างจาก resources
+    // เมธอดสำหรับบันทึกไฟล์ Dialogue ตัวอย่างจาก resources
     private void saveDefaultDialogue(String filename) {
         File file = new File(dialoguesFolder, filename);
         if (!file.exists()) {
@@ -101,17 +96,14 @@ public class DialoguesEconomy extends JavaPlugin {
         return config;
     }
 
-    // เมธอด getActiveDialogues เดิม
     public Map<UUID, DialogueState> getActiveDialogues() {
         return activeDialogues;
     }
 
-    // [ใหม่] Getter สำหรับ chatAwait
     public Map<UUID, ConfigurationSection> getChatAwait() {
         return chatAwait;
     }
     
-    // [ใหม่] เมธอดสำหรับประมวลผลรายการ Action (เช่น say/cmd) ที่ผู้เล่นเลือกผ่านแชท
     @SuppressWarnings("unchecked")
     public void processChatActions(Player player, DialogueState mainState, List<?> actionsList) {
         if (actionsList == null || actionsList.isEmpty()) {
@@ -127,12 +119,10 @@ public class DialoguesEconomy extends JavaPlugin {
             YamlConfiguration tempActionConfig = new YamlConfiguration();
             actionMap.forEach(tempActionConfig::set);
 
-            // 1. Action: say
             if (tempActionConfig.isSet("say")) {
                 String content = replacePlaceholders(player, tempActionConfig.getString("say", ""));
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&', content));
             } 
-            // 2. Action: cmd
             else if (tempActionConfig.isSet("cmd")) {
                 String content = replacePlaceholders(player, tempActionConfig.getString("cmd", ""));
                 
@@ -143,11 +133,9 @@ public class DialoguesEconomy extends JavaPlugin {
             }
         }
 
-        // รัน DialogueRunner ต่อจากบรรทัดที่ 'chat' หยุดไว้
         new DialogueRunner(this, player, mainState).runTaskLater(this, 1L);
     }
     
-    // เมธอดสำหรับแทนที่ Placeholder และ Color Code
     public String replacePlaceholders(Player player, String text) {
         String processedText = text;
         
@@ -186,10 +174,16 @@ public class DialoguesEconomy extends JavaPlugin {
         return dialoguesFolder;
     }
     
-    // เมธอด initiateDialogue เดิม + เพิ่ม Logic ล้าง chatAwait และปรับปรุงการค้นหา Section
     public void initiateDialogue(CommandSender caller, Player target, String filename, String section) {
+        
+        // [แก้ไขใหม่] ตรวจสอบและเพิ่ม .yml ถ้าชื่อไฟล์ไม่มีนามสกุล
+        if (!filename.toLowerCase().endsWith(".yml")) {
+            filename = filename + ".yml";
+        }
+        
         File file = new File(dialoguesFolder, filename);
         if (!file.exists()) {
+            // ตอนนี้จะแสดงชื่อไฟล์เต็ม เช่น "1.yml" ในข้อความแจ้งเตือน
             caller.sendMessage(ChatColor.RED + "Dialogue file not found: " + filename + " in dialogues/ folder.");
             return;
         }
@@ -215,17 +209,16 @@ public class DialoguesEconomy extends JavaPlugin {
             return;
         }
 
-        // สร้างสถานะบทสนทนาใหม่
         DialogueState state = new DialogueState(file, dialogueConfig, validPath);
         activeDialogues.put(target.getUniqueId(), state);
         
-        // [สำคัญ] ล้างสถานะรอแชท หากผู้เล่นเริ่ม dialogue ใหม่ทับของเดิม
+        // ล้างสถานะรอแชท หากผู้เล่นเริ่ม dialogue ใหม่ทับของเดิม
         chatAwait.remove(target.getUniqueId());
 
         // เริ่ม Dialogue Runner
         new DialogueRunner(this, target, state).runTask(this);
 
-        // แจ้งผู้เรียกคำสั่ง (เฉพาะกรณีที่ไม่ใช่ผู้เล่นคนเดียวกับเป้าหมาย)
+        // แจ้งผู้เรียกคำสั่ง
         if (caller instanceof Player && !caller.equals(target)) {
             String startMsg = config.getString("messages.dialogue-started-target",
                     "&aDialogue started for %player_name%.");
