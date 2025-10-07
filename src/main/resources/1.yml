@@ -1,0 +1,15 @@
+# 1.yml
+start:
+  - say: "§eNPC: §fสวัสดี! คุณอยากเปลี่ยนโหมดเกมไหม? พิมพ์ตัวเลขเพื่อเลือก:"
+  - say: "§a1 §f→ Creative"
+  - say: "§b2 §f→ Survival"
+  - say: "§e3 §f→ ไม่เปลี่ยนตอนนี้"
+  - chat:
+      "1":
+        - say: "§aกำลังเปลี่ยนเป็น Creative!"
+        - cmd: "/gamemode 1 @p"
+      "2":
+        - say: "§bโอเค จะอยู่ในโหมด Survival ต่อ!"
+        - cmd: "/gamemode 0 @p"
+      "3":
+        - say: "§eไม่มีปัญหา เลือกเมื่อพร้อม!"
