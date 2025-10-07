@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DialogueState {
-    
+
     private final File dialogueFile;
     private final FileConfiguration dialogueConfig;
     private String currentSection;
@@ -21,11 +21,11 @@ public class DialogueState {
         this.currentSection = startSection;
         this.currentLineIndex = 0;
     }
-    
+
     public File getDialogueFile() {
         return dialogueFile;
     }
-    
+
     public String getDialogueFileName() {
         return dialogueFile.getName();
     }
@@ -45,30 +45,44 @@ public class DialogueState {
 
     /**
      * ดึง ConfigurationSection ของบรรทัดบทสนทนาปัจจุบัน
-     * *NOTE: มีการแปลง MapList ไปเป็น ConfigurationSection ชั่วคราว
+     * รองรับทั้งแบบใหม่ (lines:) และแบบเก่า (text:)
      */
     @SuppressWarnings("unchecked")
     public ConfigurationSection getCurrentLineConfig() {
         ConfigurationSection section = dialogueConfig.getConfigurationSection(currentSection);
         if (section == null) return null;
-        
-        // ใช้ getList เพื่อดึง List<Map> 
-        List<?> linesListRaw = section.getList("lines"); 
-        if (linesListRaw == null || linesListRaw.isEmpty() || currentLineIndex >= linesListRaw.size()) {
-            return null; 
+
+        // ---- 1. ระบบใหม่แบบ lines: ----
+        List<?> linesListRaw = section.getList("lines");
+        if (linesListRaw != null && !linesListRaw.isEmpty()) {
+            if (currentLineIndex >= linesListRaw.size()) return null;
+
+            Object lineObject = linesListRaw.get(currentLineIndex);
+            if (!(lineObject instanceof Map)) {
+                DialoguesEconomy.getInstance().getLogger().warning("Invalid line data found in section: " + currentSection);
+                return null;
+            }
+
+            Map<String, Object> lineMap = (Map<String, Object>) lineObject;
+            YamlConfiguration tempConfig = new YamlConfiguration();
+            lineMap.forEach(tempConfig::set);
+            return tempConfig;
         }
 
-        // ต้องตรวจสอบให้แน่ใจว่าแต่ละ Element เป็น Map
-        Object lineObject = linesListRaw.get(currentLineIndex);
-        if (!(lineObject instanceof Map)) {
-            DialoguesEconomy.getInstance().getLogger().warning("Invalid line data found in section: " + currentSection);
-            return null;
+        // ---- 2. ระบบเก่าแบบ text: ----
+        if (section.isList("text")) {
+            List<?> textList = section.getList("text");
+            if (textList != null && currentLineIndex < textList.size()) {
+                Object textLine = textList.get(currentLineIndex);
+                YamlConfiguration tempConfig = new YamlConfiguration();
+                tempConfig.set("type", "text");
+                tempConfig.set("line", String.valueOf(textLine));
+                return tempConfig;
+            } else {
+                return null;
+            }
         }
 
-        // แปลง Map เป็น ConfigurationSection ชั่วคราวเพื่ออ่านค่าอย่างง่ายดาย
-        Map<String, Object> lineMap = (Map<String, Object>) lineObject;
-        YamlConfiguration tempConfig = new YamlConfiguration();
-        lineMap.forEach((key, value) -> tempConfig.set(key, value));
-        return tempConfig;
+        return null;
     }
 }
