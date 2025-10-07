@@ -10,9 +10,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class DialogueCommandExecutor implements CommandExecutor {
 
@@ -25,6 +24,7 @@ public class DialogueCommandExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
+        // จัดการกับคำสั่ง /balance หรือ /dia balance
         if (!command.getName().equalsIgnoreCase("dialogue") && !command.getName().equalsIgnoreCase("dia")) {
             if (command.getName().equalsIgnoreCase("balance") && sender instanceof Player) {
                 handleBalance((Player) sender);
@@ -50,11 +50,22 @@ public class DialogueCommandExecutor implements CommandExecutor {
             case "stop":
                 handleStop(sender, args);
                 break;
-            case "reload":
-                handleReload(sender);
-                break;
             case "create":
                 handleCreate(sender, args);
+                break;
+            case "reload":
+                handleReload(sender, args);
+                break;
+            case "list":
+                handleList(sender);
+                break;
+            case "balance":
+                // อนุญาตให้ใช้ /dialogue balance ได้ด้วย
+                if (sender instanceof Player) {
+                    handleBalance((Player) sender);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "This command can only be used by a player.");
+                }
                 break;
             default:
                 sendHelp(sender);
@@ -64,48 +75,65 @@ public class DialogueCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    // --- START DIALOGUE ---
+    /**
+     * [ใหม่] เมธอดสำหรับแสดงรายการไฟล์ dialogue
+     */
+    private void handleList(CommandSender sender) {
+        if (!sender.hasPermission("dialogue.list")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            return;
+        }
+
+        File dialoguesDir = plugin.getDialoguesFolder();
+        // กรองเฉพาะไฟล์ .yml
+        File[] files = dialoguesDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".yml"));
+
+        sender.sendMessage(ChatColor.GOLD + "--- Dialogues Files (" + dialoguesDir.getName() + ") ---");
+
+        if (files == null || files.length == 0) {
+            sender.sendMessage(ChatColor.YELLOW + "No dialogue files found (.yml) in " + dialoguesDir.getName() + " folder.");
+            return;
+        }
+
+        // เรียงลำดับชื่อไฟล์และรวมเป็น String เดียวกัน
+        String fileList = Arrays.stream(files)
+                                .map(File::getName)
+                                .sorted()
+                                .collect(Collectors.joining(ChatColor.GRAY + ", " + ChatColor.GREEN));
+
+        sender.sendMessage(ChatColor.GREEN + fileList);
+    }
+    
     private void handleStart(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("dialogue.start")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            return;
+        }
+        
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /dialogue start <player> <file>");
+            sender.sendMessage(ChatColor.RED + "Usage: /dialogue start <player> <file> [section]");
             return;
         }
 
         Player target = Bukkit.getPlayer(args[1]);
-        String filename = args[2];
-        if (!filename.endsWith(".yml")) filename += ".yml";
-
         if (target == null) {
             sender.sendMessage(ChatColor.RED + "Player '" + args[1] + "' not found.");
             return;
         }
 
-        // เช็กสถานะว่าอยู่ใน dialogue อยู่หรือเปล่า
-        if (plugin.getActiveDialogues().containsKey(target.getUniqueId())) {
-            String busyMessage = plugin.getMainConfig().getString("messages.player-busy", "&cPlayer is already in a dialogue!");
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', busyMessage));
-            return;
-        }
+        String filename = args[2];
+        // กำหนดให้ section เป็น "start" หากไม่ได้ระบุ
+        String section = args.length > 3 ? args[3] : "start";
 
-        File file = new File(plugin.getDialoguesFolder(), filename);
-        if (!file.exists()) {
-            sender.sendMessage(ChatColor.RED + "Dialogue file '" + filename + "' not found in dialogues/ folder.");
-            return;
-        }
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-
-        // ตรวจว่าไฟล์มี section start หรือไม่ (รองรับทั้งแบบ dialogues.start และ start)
-        if (config.isConfigurationSection("dialogues.start")) {
-            plugin.initiateDialogue(sender, target, filename, "dialogues.start");
-        } else if (config.isConfigurationSection("start")) {
-            plugin.initiateDialogue(sender, target, filename, "start");
-        } else {
-            sender.sendMessage(ChatColor.RED + "Dialogue section 'start' not found in " + filename);
-        }
+        plugin.initiateDialogue(sender, target, filename, section);
     }
 
     private void handleStop(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("dialogue.stop")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            return;
+        }
+        
         if (args.length < 2) {
             sender.sendMessage(ChatColor.RED + "Usage: /dialogue stop <player>");
             return;
@@ -117,67 +145,88 @@ public class DialogueCommandExecutor implements CommandExecutor {
             return;
         }
 
-        if (plugin.getActiveDialogues().remove(target.getUniqueId()) != null) {
-            String endMsg = plugin.getMainConfig().getString("messages.dialogue-ended-admin", "&aDialogue with %player_name% forcefully stopped.");
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg.replace("%player_name%", target.getName())));
-            target.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMainConfig().getString("messages.dialogue-ended", "&aDialogue ended.")));
+        if (plugin.getActiveDialogues().containsKey(target.getUniqueId())) {
+            // ลบทั้งสถานะ dialogue และสถานะรอแชท
+            plugin.getActiveDialogues().remove(target.getUniqueId());
+            plugin.getChatAwait().remove(target.getUniqueId()); 
+            target.sendMessage(ChatColor.YELLOW + "Dialogue has been forcefully stopped.");
+            sender.sendMessage(ChatColor.GREEN + "Dialogue for " + target.getName() + " stopped.");
         } else {
             sender.sendMessage(ChatColor.YELLOW + target.getName() + " is not currently in a dialogue.");
         }
     }
 
-    private void handleReload(CommandSender sender) {
-        plugin.reloadConfig();
-        sender.sendMessage(ChatColor.GREEN + "DialoguesEconomy config reloaded!");
+    private void handleCreate(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("dialogue.create")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            return;
+        }
+
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /dialogue create <file>");
+            return;
+        }
+
+        String filename = args[1].toLowerCase().endsWith(".yml") ? args[1] : args[1] + ".yml";
+        File file = new File(plugin.getDialoguesFolder(), filename);
+
+        if (file.exists()) {
+            sender.sendMessage(ChatColor.YELLOW + "Dialogue file '" + filename + "' already exists.");
+            return;
+        }
+
+        try {
+            if (file.createNewFile()) {
+                // เขียนเนื้อหาเริ่มต้นลงในไฟล์ (ใช้รูปแบบ List of Map ที่เราแก้ไขใน DialogueState ให้รองรับแล้ว)
+                YamlConfiguration config = new YamlConfiguration();
+                config.set("start.0.say", "§eNPC: §fสวัสดี! นี่คือไฟล์ใหม่.");
+                config.set("start.1.end", "");
+                config.save(file);
+
+                sender.sendMessage(ChatColor.GREEN + "Dialogue file '" + filename + "' created successfully with default 'start' section.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "Failed to create dialogue file '" + filename + "'.");
+            }
+        } catch (IOException e) {
+            sender.sendMessage(ChatColor.RED + "An error occurred while creating the file.");
+            e.printStackTrace();
+        }
     }
 
-    private void handleCreate(CommandSender sender, String[] args) {
-        if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /dialogue create <filename>");
+    private void handleReload(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("dialogue.reload")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
             return;
         }
+        
+        plugin.reloadConfig();
+        // ไม่จำเป็นต้อง Reload dialogues files เพราะถูกโหลดใหม่เมื่อมีการเรียกใช้คำสั่ง start
 
-        String filename = args[1];
-        if (!filename.endsWith(".yml")) filename += ".yml";
-
-        File targetFile = new File(plugin.getDialoguesFolder(), filename);
-
-        if (targetFile.exists()) {
-            sender.sendMessage(ChatColor.RED + "Dialogue file '" + filename + "' already exists!");
-            return;
-        }
-
-        try (InputStream is = plugin.getResource("dialogue_template.yml")) {
-            if (is == null) {
-                targetFile.createNewFile();
-                sender.sendMessage(ChatColor.YELLOW + "Created empty dialogue file: " + filename);
-                return;
-            }
-
-            Files.copy(is, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            sender.sendMessage(ChatColor.GREEN + "Successfully created new dialogue file: " + filename);
-        } catch (IOException e) {
-            sender.sendMessage(ChatColor.RED + "Error creating dialogue file: " + e.getMessage());
-            plugin.getLogger().severe("Could not create dialogue file: " + filename + " - " + e.getMessage());
-        }
+        sender.sendMessage(ChatColor.GREEN + plugin.getName() + " configuration reloaded.");
     }
 
     private void handleInternalClick(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) return;
+        // [คำสั่งภายใน] ใช้เมื่อผู้เล่นคลิกตัวเลือกในแชท (Choice)
         if (args.length < 4) return;
-
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null || !sender.getName().equals(args[1])) return;
+        if (!(sender instanceof Player)) return; 
+        
+        Player target = (Player) sender;
+        
+        String playerName = args[1];
+        if (!target.getName().equals(playerName)) return;
 
         String filename = args[2];
         String nextSection = args[3];
 
         DialogueState currentState = plugin.getActiveDialogues().get(target.getUniqueId());
+        
+        // ตรวจสอบว่า Dialogue session ยังไม่หมดอายุ และตรงกับไฟล์ที่กำลังรันอยู่หรือไม่
         if (currentState == null || !currentState.getDialogueFileName().equalsIgnoreCase(filename)) {
             target.sendMessage(ChatColor.RED + "Dialogue session expired or invalid.");
             return;
         }
 
+        // เริ่ม Dialogue ใหม่ที่ Section ที่ถูกเลือก
         plugin.initiateDialogue(target, target, filename, nextSection);
     }
 
@@ -192,11 +241,19 @@ public class DialogueCommandExecutor implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ---");
-        sender.sendMessage(ChatColor.YELLOW + "/dialogue start <player> <file>");
-        sender.sendMessage(ChatColor.YELLOW + "/dialogue stop <player>");
-        sender.sendMessage(ChatColor.YELLOW + "/dialogue create <file>");
-        sender.sendMessage(ChatColor.YELLOW + "/dialogue reload");
-        sender.sendMessage(ChatColor.YELLOW + "/balance (or /dia balance)");
+        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ---\n");
+        sender.sendMessage(ChatColor.YELLOW + "/dialogue start <player> <file> [section] §f- Start a dialogue.");
+        sender.sendMessage(ChatColor.YELLOW + "/dialogue stop <player> §f- Force stop a dialogue.");
+        sender.sendMessage(ChatColor.YELLOW + "/dialogue create <file> §f- Create a new dialogue file.");
+        sender.sendMessage(ChatColor.YELLOW + "/dialogue list §f- List all dialogue files.");
+        sender.sendMessage(ChatColor.YELLOW + "/dialogue reload §f- Reload plugin config.");
+        sender.sendMessage(ChatColor.YELLOW + "/balance (or /dia balance) §f- Check player balance (Requires Vault).");
+        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ---\n");
+        sender.sendMessage(ChatColor.YELLOW + "/dia start <player> <file> [section] §f- Start a dialogue.");
+        sender.sendMessage(ChatColor.YELLOW + "/dia stop <player> §f- Force stop a dialogue.");
+        sender.sendMessage(ChatColor.YELLOW + "/dia create <file> §f- Create a new dialogue file.");
+        sender.sendMessage(ChatColor.YELLOW + "/dia list §f- List all dialogue files.");
+        sender.sendMessage(ChatColor.YELLOW + "/dia reload §f- Reload plugin config.");
+        sender.sendMessage(ChatColor.GOLD + "--- DialoguesEconomy Commands ---\n");
     }
 }

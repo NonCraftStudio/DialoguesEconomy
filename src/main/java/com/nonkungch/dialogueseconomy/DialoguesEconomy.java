@@ -13,10 +13,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import net.milkbowl.vault.economy.Economy;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class DialoguesEconomy extends JavaPlugin {
 
@@ -44,6 +49,10 @@ public class DialoguesEconomy extends JavaPlugin {
         config = getConfig();
         if (!dialoguesFolder.exists()) dialoguesFolder.mkdirs();
 
+        // [ใหม่] สร้างไฟล์ตัวอย่าง Dialogue
+        saveDefaultDialogue("example.yml");
+        saveDefaultDialogue("1.yml");
+
         // === ตรวจสอบการเชื่อมต่อกับ Vault Economy ===
         setupEconomy();
 
@@ -64,7 +73,24 @@ public class DialoguesEconomy extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // โค้ด onDisable เดิม
+        // ...
+    }
+    
+    // [ใหม่] เมธอดสำหรับบันทึกไฟล์ Dialogue ตัวอย่างจาก resources
+    private void saveDefaultDialogue(String filename) {
+        File file = new File(dialoguesFolder, filename);
+        if (!file.exists()) {
+            try (InputStream is = getResource(filename)) {
+                if (is != null) {
+                    Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    getLogger().info("Successfully created default dialogue file: " + filename);
+                } else {
+                    getLogger().warning("Could not find default dialogue file in resources: " + filename);
+                }
+            } catch (IOException e) {
+                getLogger().log(Level.SEVERE, "Could not save default dialogue file: " + filename, e);
+            }
+        }
     }
 
     public static DialoguesEconomy getInstance() {
@@ -98,7 +124,6 @@ public class DialoguesEconomy extends JavaPlugin {
 
             Map<String, Object> actionMap = (Map<String, Object>) actionObj;
             
-            // ใช้ YamlConfiguration เพื่อจัดการ map ที่ซับซ้อน (เช่น List of Map)
             YamlConfiguration tempActionConfig = new YamlConfiguration();
             actionMap.forEach(tempActionConfig::set);
 
@@ -112,12 +137,10 @@ public class DialoguesEconomy extends JavaPlugin {
                 String content = replacePlaceholders(player, tempActionConfig.getString("cmd", ""));
                 
                 String processedCommand = content.replace("@p", player.getName());
-                // รันคำสั่งใน Main Thread
                 Bukkit.getScheduler().runTask(this, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
                 });
             }
-            // สามารถเพิ่ม Logic สำหรับ Action อื่นๆ ที่อาจจะอยู่ใน Choice ได้ที่นี่ (เช่น give, effect, goto, end)
         }
 
         // รัน DialogueRunner ต่อจากบรรทัดที่ 'chat' หยุดไว้
@@ -130,14 +153,12 @@ public class DialoguesEconomy extends JavaPlugin {
         
         if (placeholderApiEnabled && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             try {
-                 // ใช้ PlaceholderAPI ในการแทนที่
                  processedText = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, processedText);
             } catch (NoClassDefFoundError | NoSuchMethodError ignored) {
-                 // ไม่สนใจหากเกิดปัญหาในการเข้าถึง PlaceholderAPI
+                 // ignore
             }
         }
         
-        // Simple placeholders
         if (player != null) {
             processedText = processedText.replace("%player_name%", player.getName());
         }
@@ -146,7 +167,6 @@ public class DialoguesEconomy extends JavaPlugin {
     }
 
     private boolean setupEconomy() {
-        // โค้ด Vault Economy เดิม
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
@@ -166,7 +186,7 @@ public class DialoguesEconomy extends JavaPlugin {
         return dialoguesFolder;
     }
     
-    // เมธอด initiateDialogue เดิม
+    // เมธอด initiateDialogue เดิม + เพิ่ม Logic ล้าง chatAwait และปรับปรุงการค้นหา Section
     public void initiateDialogue(CommandSender caller, Player target, String filename, String section) {
         File file = new File(dialoguesFolder, filename);
         if (!file.exists()) {
@@ -182,7 +202,8 @@ public class DialoguesEconomy extends JavaPlugin {
         String validPath = section;
 
         for (String path : possiblePaths) {
-            if (dialogueConfig.isConfigurationSection(path)) {
+            // ใช้ dialogueConfig.get(path) != null เพื่อรองรับ List of Map ที่ระดับบนสุด
+            if (dialogueConfig.get(path) != null) { 
                 found = true;
                 validPath = path;
                 break;
@@ -198,7 +219,7 @@ public class DialoguesEconomy extends JavaPlugin {
         DialogueState state = new DialogueState(file, dialogueConfig, validPath);
         activeDialogues.put(target.getUniqueId(), state);
         
-        // ลบผู้เล่นออกจากสถานะรอแชท หากมีการเรียกใช้ dialogue ใหม่ทับของเดิม
+        // [สำคัญ] ล้างสถานะรอแชท หากผู้เล่นเริ่ม dialogue ใหม่ทับของเดิม
         chatAwait.remove(target.getUniqueId());
 
         // เริ่ม Dialogue Runner
