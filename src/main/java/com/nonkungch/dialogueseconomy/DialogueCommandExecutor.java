@@ -193,6 +193,6 @@ public class DialogueCommandExecutor implements CommandExecutor {
         sender.sendMessage(ChatColor.YELLOW + "/dialogue list");
         sender.sendMessage(ChatColor.YELLOW + "/dialogue create <file>");
         sender.sendMessage(ChatColor.YELLOW + "/dialogue reload");
-        sender.sendMessage(ChatColor.GOLD + "------ END ------");
+        sender.sendMessage(ChatColor.GOLD + "---------------- END ----------------");
     }
 }

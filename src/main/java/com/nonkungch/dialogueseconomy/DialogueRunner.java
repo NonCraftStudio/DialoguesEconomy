@@ -9,10 +9,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+// Imports สำหรับ Action Bar เท่านั้น
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import java.util.logging.Level;
 import java.util.List;
-
-// [ถูกลบ]: Imports สำหรับ BungeeChat API
+import java.util.UUID;
 
 public class DialogueRunner extends BukkitRunnable {
 
@@ -38,9 +41,10 @@ public class DialogueRunner extends BukkitRunnable {
         String type = lineConfig.getString("type", "text");
         String lineText = lineConfig.getString("line", "");
 
+        // ดึงค่า delay โดยใช้ค่า default 20 ticks ถ้าไม่ระบุ
         int delay = lineConfig.getInt("delay", plugin.getMainConfig().getInt("settings.default-delay", 20));
 
-        // --- 1. ประมวลผล Placeholder และ Color Codes ---
+        // --- 1. ประมวลผล Placeholder และ Color Codes (สำหรับบรรทัดข้อความหลัก) ---
         String finalLine = plugin.replacePlaceholders(target, lineText); 
         
         // ตัวแปรควบคุมการไหล (ถ้าเป็น false ให้หยุด Runner)
@@ -53,22 +57,27 @@ public class DialogueRunner extends BukkitRunnable {
                 break;
 
             case "command":
-                String commandStr = lineConfig.getString("command", finalLine);
+            case "console_command": // <--- [เพิ่มใหม่] รองรับ type: console_command 
+                // ดึงคำสั่งจากคีย์ 'command' หรือ 'line'
+                String commandStr = lineConfig.getString("command", finalLine); 
+                
+                // ประมวลผล Placeholder (รวมถึง %player_name% ในคำสั่ง mvtp)
                 String processedCommand = plugin.replacePlaceholders(target, commandStr);
                 
+                // [สำคัญ] สั่งรันคำสั่งผ่าน ConsoleSender บน Main Thread
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
                 });
                 break;
 
             case "choice":
-                sendChoices(target, lineConfig); // เรียกเมธอดใหม่สำหรับพิมพ์ตัวเลข
+                sendChoices(target, lineConfig);
                 this.cancel(); // หยุด Runner รอการตอบสนองจากผู้เล่น
-                return; // หยุดการทำงานของ run()
+                return;
 
             case "end":
                 endDialogue(lineConfig.getString("message", "messages.dialogue-ended"));
-                return; // หยุดการทำงานของ run()
+                return;
 
             case "check_money":
                 continueToNextLine = handleCheckMoney(lineConfig); 
@@ -96,12 +105,12 @@ public class DialogueRunner extends BukkitRunnable {
             return; 
         }
 
-        // Run Next Line (สำหรับคำสั่งที่ไม่ได้หยุดการทำงาน)
+        // Run Next Line
         state.incrementLine();
         new DialogueRunner(plugin, target, state).runTaskLater(plugin, delay);
     }
     
-    // --- Private Handlers for Clarity ---
+    // --- Private Handlers ---
     
     private boolean handleCheckMoney(ConfigurationSection lineConfig) {
         double requiredMoney = lineConfig.getDouble("amount", 0.0);
@@ -205,12 +214,11 @@ public class DialogueRunner extends BukkitRunnable {
             target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg));
         }
         plugin.getActiveDialogues().remove(target.getUniqueId());
-        plugin.getChatAwait().remove(target.getUniqueId()); // ล้างสถานะรอแชทเมื่อจบ
+        plugin.getChatAwait().remove(target.getUniqueId());
         this.cancel();
     }
 
     private void sendLine(Player player, String line, String displayMode, String npcName) {
-        // ... (โค้ดเดิม) ...
         String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
         String translatedLine;
         
@@ -225,8 +233,7 @@ public class DialogueRunner extends BukkitRunnable {
                 player.sendTitle(translatedLine, "", 10, 70, 20);
                 break;
             case "actionbar":
-                // ต้องใช้ BungeeChat API สำหรับ Action Bar
-                player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, new net.md_5.bungee.api.chat.TextComponent(translatedLine));
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(translatedLine));
                 break;
             case "chat":
             default:
@@ -242,7 +249,7 @@ public class DialogueRunner extends BukkitRunnable {
         }
     }
 
-    // เมธอดใหม่: สำหรับแสดงตัวเลือกแบบพิมพ์ตัวเลข
+    // เมธอดสำหรับแสดงตัวเลือกแบบพิมพ์ตัวเลข
     private void sendChoices(Player player, ConfigurationSection lineConfig) {
         if (!lineConfig.isList("choices")) {
             player.sendMessage(ChatColor.RED + "Error: 'choices' section not found for choice type.");
@@ -271,7 +278,7 @@ public class DialogueRunner extends BukkitRunnable {
             index++;
         }
 
-        // [สำคัญ] เก็บสถานะการรอแชทไว้ที่นี่
+        // เก็บสถานะการรอแชทไว้
         plugin.getChatAwait().put(player.getUniqueId(), lineConfig); 
     }
 }
