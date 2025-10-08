@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-// Imports สำหรับ Action Bar เท่านั้น
+// Imports สำหรับ Action Bar และ Chat API
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -44,10 +44,10 @@ public class DialogueRunner extends BukkitRunnable {
         // ดึงค่า delay โดยใช้ค่า default 20 ticks ถ้าไม่ระบุ
         int delay = lineConfig.getInt("delay", plugin.getMainConfig().getInt("settings.default-delay", 20));
 
-        // --- 1. ประมวลผล Placeholder และ Color Codes (สำหรับบรรทัดข้อความหลัก) ---
+        // --- 1. ประมวลผล Placeholder และ Color Codes ---
         String finalLine = plugin.replacePlaceholders(target, lineText); 
         
-        // ตัวแปรควบคุมการไหล (ถ้าเป็น false ให้หยุด Runner)
+        // ตัวแปรควบคุมการไหล (ถ้าเป็น false ให้หยุด Runner หรือเปลี่ยน Flow)
         boolean continueToNextLine = true;
 
         // --- 2. การจัดการประเภทคำสั่ง (Type Handling) ---
@@ -57,21 +57,18 @@ public class DialogueRunner extends BukkitRunnable {
                 break;
 
             case "command":
-            case "console_command": // <--- [เพิ่มใหม่] รองรับ type: console_command 
-                // ดึงคำสั่งจากคีย์ 'command' หรือ 'line'
+            case "console_command": // รองรับคำสั่งที่รันจาก Console
                 String commandStr = lineConfig.getString("command", finalLine); 
-                
-                // ประมวลผล Placeholder (รวมถึง %player_name% ในคำสั่ง mvtp)
                 String processedCommand = plugin.replacePlaceholders(target, commandStr);
                 
-                // [สำคัญ] สั่งรันคำสั่งผ่าน ConsoleSender บน Main Thread
+                // สั่งรันคำสั่งผ่าน ConsoleSender บน Main Thread
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
                 });
                 break;
 
             case "choice":
-                sendChoices(target, lineConfig);
+                sendChoices(target, lineConfig); // ใช้ระบบพิมพ์ตัวเลข
                 this.cancel(); // หยุด Runner รอการตอบสนองจากผู้เล่น
                 return;
 
@@ -100,8 +97,19 @@ public class DialogueRunner extends BukkitRunnable {
                 break;
         }
         
-        // --- 3. Flow Control: ตัดสินใจว่าจะไปต่อหรือไม่ ---
-        if (!continueToNextLine) {
+        // --- 3. Flow Control: จัดการ goto และตัดสินใจว่าจะไปต่อหรือไม่ ---
+        
+        // [แก้ไขบั๊ก] ตรวจสอบคำสั่ง 'goto' ก่อนที่จะไปบรรทัดถัดไป
+        String gotoSection = lineConfig.getString("goto");
+        if (gotoSection != null) {
+            // ไม่ต้อง increment line, แค่เปลี่ยน Section และรันทันที
+            state.setCurrentSection(gotoSection);
+            new DialogueRunner(plugin, target, state).runTask(plugin);
+            return; 
+        }
+        
+        // ถ้า Check/Take ล้มเหลว (continueToNextLine = false) จะหยุด
+        if (!continueToNextLine) { 
             return; 
         }
 
@@ -110,7 +118,7 @@ public class DialogueRunner extends BukkitRunnable {
         new DialogueRunner(plugin, target, state).runTaskLater(plugin, delay);
     }
     
-    // --- Private Handlers ---
+    // --- Private Handlers (ไม่มีการเปลี่ยนแปลงจากที่เคยให้ไป) ---
     
     private boolean handleCheckMoney(ConfigurationSection lineConfig) {
         double requiredMoney = lineConfig.getDouble("amount", 0.0);
@@ -120,8 +128,8 @@ public class DialogueRunner extends BukkitRunnable {
                 String failSection = lineConfig.getString("fail_goto");
                 if (failSection != null) {
                     state.setCurrentSection(failSection);
-                    new DialogueRunner(plugin, target, state).runTask(plugin);
-                    return false;
+                    new DialogueRunner(plugin, target, state).runTask(plugin); // รัน Section ใหม่ทันที
+                    return false; // ไม่ต้องไปต่อในบรรทัดถัดไป
                 }
                 endDialogue("messages.dialogue-ended");
                 return false;
@@ -129,7 +137,7 @@ public class DialogueRunner extends BukkitRunnable {
         } else {
             plugin.getLogger().warning("Vault Economy is not setup. Skipping money check.");
         }
-        return true;
+        return true; // ไปต่อบรรทัดถัดไป
     }
     
     private void handleTakeMoney(ConfigurationSection lineConfig) {
@@ -169,6 +177,12 @@ public class DialogueRunner extends BukkitRunnable {
 
             String prefix = plugin.getMainConfig().getString("messages.chat-prefix", "&6[&bDialogue&6]");
             if (removedCount < takeItemAmount) {
+                String failSection = lineConfig.getString("fail_goto");
+                if (failSection != null) {
+                    state.setCurrentSection(failSection);
+                    new DialogueRunner(plugin, target, state).runTask(plugin);
+                    return false;
+                }
                 target.sendMessage(ChatColor.RED + prefix + " &cไม่สามารถยึด Item ได้ครบ! Dialogue จบลง");
                 endDialogue("messages.dialogue-ended");
                 return false;
@@ -181,6 +195,7 @@ public class DialogueRunner extends BukkitRunnable {
     }
 
     private int removeItemFromInventory(Player player, Material material, int amount) {
+        // ... (Logic การยึด Item เหมือนเดิม)
         int removedCount = 0;
         ItemStack[] contents = player.getInventory().getContents();
 
@@ -214,7 +229,7 @@ public class DialogueRunner extends BukkitRunnable {
             target.sendMessage(ChatColor.translateAlternateColorCodes('&', endMsg));
         }
         plugin.getActiveDialogues().remove(target.getUniqueId());
-        plugin.getChatAwait().remove(target.getUniqueId());
+        plugin.getChatAwait().remove(target.getUniqueId()); // ล้างสถานะรอแชท
         this.cancel();
     }
 
@@ -223,7 +238,7 @@ public class DialogueRunner extends BukkitRunnable {
         String translatedLine;
         
         if (npcName != null) {
-            translatedLine = ChatColor.translateAlternateColorCodes('&', "&6[" + npcName + "]&r " + line);
+            translatedLine = ChatColor.translateAlternateColorCodes('&', "&c[" + npcName + "]&r " + line);
         } else {
             translatedLine = ChatColor.translateAlternateColorCodes('&', prefix + " " + line);
         }
@@ -249,7 +264,7 @@ public class DialogueRunner extends BukkitRunnable {
         }
     }
 
-    // เมธอดสำหรับแสดงตัวเลือกแบบพิมพ์ตัวเลข
+    // เมธอดสำหรับแสดงตัวเลือกแบบพิมพ์ตัวเลข (ไม่ใช่ระบบคลิกเก่า)
     private void sendChoices(Player player, ConfigurationSection lineConfig) {
         if (!lineConfig.isList("choices")) {
             player.sendMessage(ChatColor.RED + "Error: 'choices' section not found for choice type.");
@@ -261,8 +276,8 @@ public class DialogueRunner extends BukkitRunnable {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', prompt));
         player.sendMessage(ChatColor.GOLD + "--- P L E A S E  C H O O S E ---");
 
-        int index = 1;
         List<?> choicesList = lineConfig.getList("choices");
+        int index = 1;
 
         for (Object choiceObj : choicesList) {
             if (!(choiceObj instanceof String)) continue;
@@ -273,7 +288,6 @@ public class DialogueRunner extends BukkitRunnable {
             String[] parts = choiceStr.split("\\|");
             String display = (parts.length > 0 ? parts[0].trim() : "Invalid Choice");
             
-            // แสดงตัวเลือกให้ผู้เล่นเห็น
             player.sendMessage(ChatColor.YELLOW + "[" + index + "] " + ChatColor.RESET + ChatColor.translateAlternateColorCodes('&', display));
             index++;
         }
