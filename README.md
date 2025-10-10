@@ -217,12 +217,5 @@ ___
 Discord: NonKungCh#1234
 
 GitHub: NonCraftStudio
-
-
-คุณสามารถ:
-1. เปิด **Notepad / VSCode / Sublime Text**  
-2. วางเนื้อหาด้านบนลงไป  
-3. บันทึกเป็น `README.md`  
-
-ถ้าต้องการ ผมสามารถทำ **เวอร์ชัน ZIP พร้อม `README.md`** ให้คุณโหลดพร้อมได้เลย คุณอยากให้ผมทำไหม?
+```
 
